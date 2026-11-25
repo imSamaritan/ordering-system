@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Controllers\AuthController;
+use App\Middleware\JwtCookieAuthMiddleware;
 use App\Support\ResponseHelper;
 use Dibi\Connection;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -20,6 +22,11 @@ return static function (App $app): void {
             'pageScript' => 'pages/storefront.js',
         ]);
     });
+
+    // Auth web views
+    $app->get('/login', [AuthController::class, 'showLogin']);
+    $app->get('/register', [AuthController::class, 'showRegister']);
+    $app->get('/verify-email', [AuthController::class, 'showVerifyEmail']);
 
     $app->group('/api/v1', function (RouteCollectorProxy $group): void {
         $group->get('/health', function (Request $request, Response $response): Response {
@@ -42,5 +49,16 @@ return static function (App $app): void {
                 'currency_symbol' => $settings['app']['currency_symbol'] ?? 'R',
             ]);
         });
+
+        // Public Auth API endpoints
+        $group->post('/auth/register', [AuthController::class, 'register']);
+        $group->get('/auth/verify-email', [AuthController::class, 'verifyEmailApi']);
+        $group->post('/auth/resend-verification', [AuthController::class, 'resendVerification']);
+        $group->post('/auth/login', [AuthController::class, 'login']);
+        $group->post('/auth/logout', [AuthController::class, 'logout']);
+
+        // Authenticated Auth API endpoints
+        $group->get('/auth/me', [AuthController::class, 'me'])
+            ->add(JwtCookieAuthMiddleware::class);
     });
 };

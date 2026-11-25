@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Controllers\AuthController;
+use App\Middleware\JwtCookieAuthMiddleware;
+use App\Repositories\EmailLogRepository;
+use App\Repositories\EmailVerificationRepository;
+use App\Repositories\UserRepository;
+use App\Services\AuthService;
+use App\Services\EmailService;
+use App\Services\VerificationService;
+use App\Support\ViewRenderer;
 use Dibi\Connection;
 use Psr\Container\ContainerInterface;
 use Slim\Views\PhpRenderer;
@@ -33,7 +42,7 @@ return [
         /** @var array<string, mixed> $app */
         $app = $settings['app'];
 
-        $renderer = new PhpRenderer(dirname(__DIR__) . '/templates', [
+        $renderer = new ViewRenderer(dirname(__DIR__) . '/templates/', [
             'appName' => (string) $app['name'],
             'basePath' => (string) $app['base_path'],
             'currency' => (string) $app['currency'],
@@ -43,4 +52,74 @@ return [
 
         return $renderer;
     },
+
+    UserRepository::class => static fn (ContainerInterface $c): UserRepository => new UserRepository(
+        $c->get(Connection::class)
+    ),
+
+    EmailVerificationRepository::class => static fn (ContainerInterface $c): EmailVerificationRepository => new EmailVerificationRepository(
+        $c->get(Connection::class)
+    ),
+
+    EmailLogRepository::class => static fn (ContainerInterface $c): EmailLogRepository => new EmailLogRepository(
+        $c->get(Connection::class)
+    ),
+
+    EmailService::class => static function (ContainerInterface $container): EmailService {
+        /** @var array<string, mixed> $settings */
+        $settings = $container->get('settings');
+        $dryRun = filter_var($_ENV['MAIL_DRY_RUN'] ?? 'false', FILTER_VALIDATE_BOOLEAN);
+
+        return new EmailService(
+            $settings['smtp'],
+            $container->get(EmailLogRepository::class),
+            $dryRun
+        );
+    },
+
+    VerificationService::class => static function (ContainerInterface $container): VerificationService {
+        /** @var array<string, mixed> $settings */
+        $settings = $container->get('settings');
+
+        return new VerificationService(
+            $container->get(EmailVerificationRepository::class),
+            $container->get(UserRepository::class),
+            $container->get(EmailService::class),
+            (string) ($settings['app']['url'] ?? 'http://localhost/projects/ordering-system'),
+            (string) ($settings['app']['name'] ?? 'Produce & Inventory Ordering System')
+        );
+    },
+
+    AuthService::class => static function (ContainerInterface $container): AuthService {
+        /** @var array<string, mixed> $settings */
+        $settings = $container->get('settings');
+        /** @var array<string, mixed> $jwt */
+        $jwt = $settings['jwt'];
+
+        return new AuthService(
+            $container->get(UserRepository::class),
+            $container->get(VerificationService::class),
+            (string) ($jwt['secret'] ?? ''),
+            (int) ($jwt['ttl'] ?? 86400),
+            (string) ($jwt['cookie_name'] ?? 'ordering_auth_token'),
+            (bool) ($settings['app']['debug'] ?? false)
+        );
+    },
+
+    JwtCookieAuthMiddleware::class => static function (ContainerInterface $container): JwtCookieAuthMiddleware {
+        /** @var array<string, mixed> $settings */
+        $settings = $container->get('settings');
+
+        return new JwtCookieAuthMiddleware(
+            $container->get(AuthService::class),
+            $container->get(UserRepository::class),
+            (string) ($settings['app']['base_path'] ?? '')
+        );
+    },
+
+    AuthController::class => static fn (ContainerInterface $c): AuthController => new AuthController(
+        $c->get(AuthService::class),
+        $c->get(VerificationService::class),
+        $c->get(PhpRenderer::class)
+    ),
 ];
