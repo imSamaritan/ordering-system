@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../resources/ts/pages/supplierDashboard.ts"],
+  "sourcesContent": ["export interface SupplierDashboardComponent {\n  activeTab: 'companies' | 'inventory';\n}\n\nexport function supplierDashboardPage(): SupplierDashboardComponent {\n  return {\n    activeTab: 'companies',\n  };\n}\n\ndocument.addEventListener('alpine:init', () => {\n  window.Alpine.data('supplierDashboardPage', supplierDashboardPage);\n});\n"],
+  "mappings": "AAIO,SAASA,GAAoD,CAClE,MAAO,CACL,UAAW,WACb,CACF,CAEA,SAAS,iBAAiB,cAAe,IAAM,CAC7C,OAAO,OAAO,KAAK,wBAAyBA,CAAqB,CACnE,CAAC",
+  "names": ["supplierDashboardPage"]
+}

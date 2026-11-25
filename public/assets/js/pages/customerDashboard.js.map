@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../resources/ts/pages/customerDashboard.ts"],
+  "sourcesContent": ["export interface CustomerDashboardComponent {\n  statusFilter: string;\n  orderNumberFilter: string;\n}\n\nexport function customerDashboardPage(): CustomerDashboardComponent {\n  return {\n    statusFilter: 'all',\n    orderNumberFilter: '',\n  };\n}\n\ndocument.addEventListener('alpine:init', () => {\n  window.Alpine.data('customerDashboardPage', customerDashboardPage);\n});\n"],
+  "mappings": "AAKO,SAASA,GAAoD,CAClE,MAAO,CACL,aAAc,MACd,kBAAmB,EACrB,CACF,CAEA,SAAS,iBAAiB,cAAe,IAAM,CAC7C,OAAO,OAAO,KAAK,wBAAyBA,CAAqB,CACnE,CAAC",
+  "names": ["customerDashboardPage"]
+}

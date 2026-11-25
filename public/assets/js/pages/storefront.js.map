@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../resources/ts/pages/storefront.ts"],
+  "sourcesContent": ["export interface StorefrontComponent {\n  search: string;\n  selectedCategory: string;\n}\n\nexport function storefrontPage(): StorefrontComponent {\n  return {\n    search: '',\n    selectedCategory: 'all',\n  };\n}\n\ndocument.addEventListener('alpine:init', () => {\n  window.Alpine.data('storefrontPage', storefrontPage);\n});\n"],
+  "mappings": "AAKO,SAASA,GAAsC,CACpD,MAAO,CACL,OAAQ,GACR,iBAAkB,KACpB,CACF,CAEA,SAAS,iBAAiB,cAAe,IAAM,CAC7C,OAAO,OAAO,KAAK,iBAAkBA,CAAc,CACrD,CAAC",
+  "names": ["storefrontPage"]
+}

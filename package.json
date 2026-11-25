@@ -1,0 +1,22 @@
+{
+  "name": "ordering-system",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build:css": "tailwindcss -i ./resources/css/app.css -o ./public/assets/css/app.css --minify",
+    "build:js": "esbuild resources/ts/shared/index.ts resources/ts/pages/storefront.ts resources/ts/pages/customerDashboard.ts resources/ts/pages/supplierDashboard.ts --bundle --format=esm --outdir=public/assets/js --outbase=resources/ts --sourcemap --minify",
+    "build": "npm run build:css && npm run build:js",
+    "watch:css": "tailwindcss -i ./resources/css/app.css -o ./public/assets/css/app.css --watch"
+  },
+  "dependencies": {
+    "alpinejs": "^3.14.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.0",
+    "esbuild": "^0.25.0",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.8.0"
+  }
+}
