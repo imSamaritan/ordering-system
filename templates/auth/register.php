@@ -2,10 +2,10 @@
 /** @var string $basePath */
 $base = $basePath ?? '';
 ?>
-<section class="max-w-lg mx-auto px-4 py-12">
-    <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-8" x-data="registerForm()">
+<section class="max-w-lg mx-auto px-4 py-6 sm:py-12">
+    <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-5 sm:p-8" x-data="registerForm()">
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-stone-900">Create Account</h1>
+            <h1 class="text-xl sm:text-2xl font-bold text-stone-900">Create Account</h1>
             <p class="mt-1 text-sm text-stone-600">Register as an individual customer or a wholesale company buyer.</p>
         </div>
 
@@ -34,12 +34,12 @@ $base = $basePath ?? '';
 
                 <div>
                     <label class="block text-sm font-medium text-stone-700 mb-1.5">Account Type</label>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-2 gap-2.5 sm:gap-3">
                         <button
                             type="button"
                             @click="role = 'customer'"
                             :class="role === 'customer' ? 'border-emerald-600 bg-emerald-50 text-emerald-900' : 'border-stone-300 bg-white text-stone-700'"
-                            class="rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer"
+                            class="rounded-lg border px-2.5 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors cursor-pointer text-center"
                         >
                             Customer
                         </button>
@@ -47,7 +47,7 @@ $base = $basePath ?? '';
                             type="button"
                             @click="role = 'company'"
                             :class="role === 'company' ? 'border-emerald-600 bg-emerald-50 text-emerald-900' : 'border-stone-300 bg-white text-stone-700'"
-                            class="rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer"
+                            class="rounded-lg border px-2.5 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors cursor-pointer text-center"
                         >
                             Company / Business
                         </button>
@@ -61,7 +61,7 @@ $base = $basePath ?? '';
                         type="text"
                         x-model="company_name"
                         :required="role === 'company'"
-                        class="w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
+                        class="w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-base sm:text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
                         placeholder="e.g. Green Valley Bistro (Pty) Ltd"
                     >
                     <p x-show="fieldErrors.company_name" x-text="fieldErrors.company_name" class="mt-1 text-xs text-red-600"></p>
@@ -74,7 +74,7 @@ $base = $basePath ?? '';
                         type="text"
                         x-model="contact_name"
                         required
-                        class="w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
+                        class="w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-base sm:text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
                         placeholder="Full name"
                     >
                     <p x-show="fieldErrors.contact_name" x-text="fieldErrors.contact_name" class="mt-1 text-xs text-red-600"></p>
@@ -88,7 +88,7 @@ $base = $basePath ?? '';
                         x-model="email"
                         required
                         autocomplete="email"
-                        class="w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
+                        class="w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-base sm:text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
                         placeholder="you@company.co.za"
                     >
                     <p x-show="fieldErrors.email" x-text="fieldErrors.email" class="mt-1 text-xs text-red-600"></p>
@@ -101,7 +101,7 @@ $base = $basePath ?? '';
                             id="reg-phone"
                             type="tel"
                             x-model="phone"
-                            class="w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
+                            class="w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-base sm:text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
                             placeholder="+27 82 000 0000"
                         >
                         <p x-show="fieldErrors.phone" x-text="fieldErrors.phone" class="mt-1 text-xs text-red-600"></p>
@@ -112,7 +112,7 @@ $base = $basePath ?? '';
                             id="reg-location"
                             type="text"
                             x-model="location"
-                            class="w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
+                            class="w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-base sm:text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
                             placeholder="City / Suburb"
                         >
                         <p x-show="fieldErrors.location" x-text="fieldErrors.location" class="mt-1 text-xs text-red-600"></p>
@@ -129,7 +129,7 @@ $base = $basePath ?? '';
                             required
                             minlength="8"
                             autocomplete="new-password"
-                            class="w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
+                            class="w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-base sm:text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
                             placeholder="At least 8 characters"
                         >
                         <p x-show="fieldErrors.password" x-text="fieldErrors.password" class="mt-1 text-xs text-red-600"></p>
@@ -143,7 +143,7 @@ $base = $basePath ?? '';
                             required
                             minlength="8"
                             autocomplete="new-password"
-                            class="w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
+                            class="w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-base sm:text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
                             placeholder="Repeat password"
                         >
                         <p x-show="fieldErrors.confirm_password" x-text="fieldErrors.confirm_password" class="mt-1 text-xs text-red-600"></p>

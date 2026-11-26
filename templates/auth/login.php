@@ -2,10 +2,10 @@
 /** @var string $basePath */
 $base = $basePath ?? '';
 ?>
-<section class="max-w-md mx-auto px-4 py-12">
-    <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-8" x-data="loginForm()">
+<section class="max-w-md mx-auto px-4 py-6 sm:py-12">
+    <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-5 sm:p-8" x-data="loginForm()">
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-stone-900">Sign In</h1>
+            <h1 class="text-xl sm:text-2xl font-bold text-stone-900">Sign In</h1>
             <p class="mt-1 text-sm text-stone-600">Access your produce ordering account or supplier portal.</p>
         </div>
 
@@ -45,7 +45,7 @@ $base = $basePath ?? '';
                     x-model="email"
                     required
                     autocomplete="email"
-                    class="w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
+                    class="w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-base sm:text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
                     placeholder="you@company.co.za"
                 >
                 <p x-show="fieldErrors.email" x-text="fieldErrors.email" class="mt-1 text-xs text-red-600"></p>
@@ -59,7 +59,7 @@ $base = $basePath ?? '';
                     x-model="password"
                     required
                     autocomplete="current-password"
-                    class="w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
+                    class="w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-base sm:text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
                     placeholder="Enter your password"
                 >
                 <p x-show="fieldErrors.password" x-text="fieldErrors.password" class="mt-1 text-xs text-red-600"></p>

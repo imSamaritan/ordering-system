@@ -5,3 +5,17 @@
 [x-cloak] {
   display: none !important;
 }
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+button,
+a {
+  touch-action: manipulation;
+}
