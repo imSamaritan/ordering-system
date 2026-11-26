@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use App\Controllers\AuthController;
 use App\Controllers\CatalogController;
+use App\Controllers\CustomerDashboardController;
 use App\Controllers\OrderController;
+use App\Controllers\ReportController;
 use App\Middleware\JwtCookieAuthMiddleware;
 use App\Middleware\RoleMiddleware;
 use App\Support\ResponseHelper;
@@ -30,6 +32,11 @@ return static function (App $app): void {
     $app->get('/login', [AuthController::class, 'showLogin']);
     $app->get('/register', [AuthController::class, 'showRegister']);
     $app->get('/verify-email', [AuthController::class, 'showVerifyEmail']);
+
+    // Customer / Company Dashboard web view
+    $app->get('/dashboard', [CustomerDashboardController::class, 'showDashboard'])
+        ->add(new RoleMiddleware('customer', 'company'))
+        ->add(JwtCookieAuthMiddleware::class);
 
     $app->group('/api/v1', function (RouteCollectorProxy $group): void {
         $group->get('/health', function (Request $request, Response $response): Response {
@@ -70,6 +77,17 @@ return static function (App $app): void {
 
         // Customer / Company Order Placement
         $group->post('/orders', [OrderController::class, 'create'])
+            ->add(new RoleMiddleware('customer', 'company'))
+            ->add(JwtCookieAuthMiddleware::class);
+
+        // Customer / Company Dashboard & PDF Statements
+        $group->get('/customer/orders', [CustomerDashboardController::class, 'orders'])
+            ->add(new RoleMiddleware('customer', 'company'))
+            ->add(JwtCookieAuthMiddleware::class);
+        $group->get('/customer/orders/{id:[0-9]+}', [CustomerDashboardController::class, 'orderDetail'])
+            ->add(new RoleMiddleware('customer', 'company'))
+            ->add(JwtCookieAuthMiddleware::class);
+        $group->get('/customer/reports/pdf', [ReportController::class, 'customerStatementPdf'])
             ->add(new RoleMiddleware('customer', 'company'))
             ->add(JwtCookieAuthMiddleware::class);
     });

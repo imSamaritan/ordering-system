@@ -75,6 +75,16 @@ export interface OrderItem {
   line_total: number;
 }
 
+export interface OrderStatusHistoryEntry {
+  id: number;
+  old_status: OrderStatus | null;
+  new_status: OrderStatus;
+  note: string | null;
+  changed_at: string;
+  changed_by_name: string | null;
+  changed_by_role: UserRole | null;
+}
+
 export interface Order {
   id: number;
   order_number: string;
@@ -85,7 +95,21 @@ export interface Order {
   ordered_at: string;
   received_at: string | null;
   delivered_at: string | null;
+  item_count?: number;
   items?: OrderItem[];
+  status_history?: OrderStatusHistoryEntry[];
+}
+
+export interface CustomerOrdersSummary {
+  count: number;
+  total_spend: number;
+  delivered_count: number;
+  delivered_spend: number;
+  declined_count: number;
+  declined_total: number;
+  pending_count: number;
+  received_count: number;
+  in_progress_count: number;
 }
 
 export interface ApiResponse<T> {
