@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use App\Controllers\AuthController;
 use App\Controllers\CatalogController;
+use App\Controllers\CustomerDashboardController;
 use App\Controllers\OrderController;
+use App\Controllers\ReportController;
 use App\Middleware\JwtCookieAuthMiddleware;
 use App\Repositories\EmailLogRepository;
 use App\Repositories\EmailVerificationRepository;
@@ -14,6 +16,7 @@ use App\Repositories\UserRepository;
 use App\Services\AuthService;
 use App\Services\EmailService;
 use App\Services\OrderService;
+use App\Services\PdfReportService;
 use App\Services\VerificationService;
 use App\Support\ViewRenderer;
 use Dibi\Connection;
@@ -157,5 +160,26 @@ return [
 
     OrderController::class => static fn (ContainerInterface $c): OrderController => new OrderController(
         $c->get(OrderService::class)
+    ),
+
+    PdfReportService::class => static function (ContainerInterface $container): PdfReportService {
+        /** @var array<string, mixed> $settings */
+        $settings = $container->get('settings');
+
+        return new PdfReportService(
+            (string) ($settings['app']['name'] ?? 'Produce & Inventory Ordering System'),
+            (string) ($settings['app']['currency_symbol'] ?? 'R'),
+            (string) ($settings['app']['currency'] ?? 'ZAR')
+        );
+    },
+
+    CustomerDashboardController::class => static fn (ContainerInterface $c): CustomerDashboardController => new CustomerDashboardController(
+        $c->get(OrderRepository::class),
+        $c->get(PhpRenderer::class)
+    ),
+
+    ReportController::class => static fn (ContainerInterface $c): ReportController => new ReportController(
+        $c->get(OrderRepository::class),
+        $c->get(PdfReportService::class)
     ),
 ];
