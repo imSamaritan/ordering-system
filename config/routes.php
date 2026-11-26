@@ -33,6 +33,8 @@ return static function (App $app): void {
     $app->get('/login', [AuthController::class, 'showLogin']);
     $app->get('/register', [AuthController::class, 'showRegister']);
     $app->get('/verify-email', [AuthController::class, 'showVerifyEmail']);
+    $app->get('/forgot-password', [AuthController::class, 'showForgotPassword']);
+    $app->get('/reset-password', [AuthController::class, 'showResetPassword']);
 
     // Customer / Company Dashboard web view
     $app->get('/dashboard', [CustomerDashboardController::class, 'showDashboard'])
@@ -75,6 +77,8 @@ return static function (App $app): void {
         $group->post('/auth/resend-verification', [AuthController::class, 'resendVerification']);
         $group->post('/auth/login', [AuthController::class, 'login']);
         $group->post('/auth/logout', [AuthController::class, 'logout']);
+        $group->post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
+        $group->post('/auth/reset-password', [AuthController::class, 'resetPassword']);
 
         // Authenticated Auth API endpoints
         $group->get('/auth/me', [AuthController::class, 'me'])

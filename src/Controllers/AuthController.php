@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Services\AuthService;
+use App\Services\PasswordResetService;
 use App\Services\VerificationService;
 use App\Support\ResponseHelper;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -16,6 +17,7 @@ final class AuthController
     public function __construct(
         private readonly AuthService $authService,
         private readonly VerificationService $verificationService,
+        private readonly PasswordResetService $passwordResetService,
         private readonly PhpRenderer $view
     ) {
     }
@@ -49,6 +51,28 @@ final class AuthController
             'pageScript' => 'pages/auth.js',
             'verified' => $result['verified'],
             'verificationMessage' => $result['message'],
+        ]);
+    }
+
+    public function showForgotPassword(Request $request, Response $response): Response
+    {
+        return $this->view->render($response, 'auth/forgot-password.php', [
+            'title' => 'Forgot Password',
+            'pageScript' => 'pages/auth.js',
+        ]);
+    }
+
+    public function showResetPassword(Request $request, Response $response): Response
+    {
+        $query = $request->getQueryParams();
+        $token = trim((string) ($query['token'] ?? ''));
+        $tokenValid = $this->passwordResetService->isTokenValid($token);
+
+        return $this->view->render($response, 'auth/reset-password.php', [
+            'title' => 'Reset Password',
+            'pageScript' => 'pages/auth.js',
+            'token' => $token,
+            'tokenValid' => $tokenValid,
         ]);
     }
 
@@ -150,6 +174,41 @@ final class AuthController
         return ResponseHelper::json($response, [
             'message' => 'Signed out successfully.',
         ]);
+    }
+
+    public function forgotPassword(Request $request, Response $response): Response
+    {
+        $body = $this->parsedBodyArray($request);
+        $email = is_string($body['email'] ?? null) ? $body['email'] : '';
+        $result = $this->passwordResetService->requestReset($email);
+
+        $data = [
+            'message' => $result['message'],
+        ];
+        if (isset($result['debug_reset_url'])) {
+            $data['debug_reset_url'] = $result['debug_reset_url'];
+        }
+
+        return ResponseHelper::json($response, $data, $result['status']);
+    }
+
+    public function resetPassword(Request $request, Response $response): Response
+    {
+        $body = $this->parsedBodyArray($request);
+        $result = $this->passwordResetService->resetPassword($body);
+
+        if (!$result['ok']) {
+            return ResponseHelper::error(
+                $response,
+                $result['message'],
+                $result['status'],
+                $result['errors'] ?? []
+            );
+        }
+
+        return ResponseHelper::json($response, [
+            'message' => $result['message'],
+        ], $result['status']);
     }
 
     public function me(Request $request, Response $response): Response

@@ -21,6 +21,15 @@ interface ResendResponse {
   debug_verify_url?: string;
 }
 
+interface ForgotPasswordResponse {
+  message: string;
+  debug_reset_url?: string;
+}
+
+interface ResetPasswordResponse {
+  message: string;
+}
+
 function registerAuthComponents(): void {
   const Alpine = window.Alpine;
   if (!Alpine) return;
@@ -192,6 +201,96 @@ function registerAuthComponents(): void {
         } else {
           this.error = res.message ?? 'Could not resend verification link.';
         }
+      } catch {
+        this.error = 'Network error. Please try again.';
+      } finally {
+        this.submitting = false;
+      }
+    },
+  }));
+
+  Alpine.data('forgotPasswordForm', () => ({
+    email: '',
+    submitting: false,
+    error: '',
+    successMessage: '',
+    debugResetUrl: '',
+
+    async submit(): Promise<void> {
+      this.submitting = true;
+      this.error = '';
+      this.successMessage = '';
+      this.debugResetUrl = '';
+
+      try {
+        const res = await apiRequest<ForgotPasswordResponse>('/auth/forgot-password', {
+          method: 'POST',
+          body: JSON.stringify({ email: this.email }),
+        });
+
+        if (res.success && res.data) {
+          this.successMessage = res.data.message;
+          if (res.data.debug_reset_url) {
+            this.debugResetUrl = res.data.debug_reset_url;
+          }
+          const toast = Alpine.store('toast') as ToastStore;
+          toast.push('Reset instructions sent if the account exists.', 'success');
+        } else {
+          this.error = res.message ?? 'Unable to process your request right now.';
+        }
+      } catch {
+        this.error = 'Network error. Please try again.';
+      } finally {
+        this.submitting = false;
+      }
+    },
+  }));
+
+  Alpine.data('resetPasswordForm', (token: unknown = '') => ({
+    token: typeof token === 'string' ? token : String(token ?? ''),
+    password: '',
+    confirm_password: '',
+    submitting: false,
+    error: '',
+    fieldErrors: {} as Record<string, string>,
+    successMessage: '',
+
+    async submit(): Promise<void> {
+      this.error = '';
+      this.fieldErrors = {};
+
+      if (this.password.length < 8) {
+        this.fieldErrors.password = 'Password must be at least 8 characters long.';
+        return;
+      }
+
+      if (this.password !== this.confirm_password) {
+        this.fieldErrors.confirm_password = 'Passwords do not match.';
+        return;
+      }
+
+      this.submitting = true;
+      try {
+        const res = await apiRequest<ResetPasswordResponse>('/auth/reset-password', {
+          method: 'POST',
+          body: JSON.stringify({
+            token: this.token,
+            password: this.password,
+            confirm_password: this.confirm_password,
+          }),
+        });
+
+        if (!res.success || !res.data) {
+          this.error = res.message ?? 'Unable to reset your password.';
+          this.fieldErrors = res.errors ?? {};
+          return;
+        }
+
+        this.successMessage = res.data.message;
+        this.password = '';
+        this.confirm_password = '';
+        const toast = Alpine.store('toast') as ToastStore;
+        toast.push('Password updated! You can now sign in.', 'success');
       } catch {
         this.error = 'Network error. Please try again.';
       } finally {

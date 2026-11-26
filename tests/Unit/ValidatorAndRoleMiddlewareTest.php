@@ -89,4 +89,40 @@ final class ValidatorAndRoleMiddlewareTest extends TestCase
         $this->assertSame(200, $supplierRes->getStatusCode());
         $this->assertSame('allowed', (string) $supplierRes->getBody());
     }
+
+    public function testPasswordResetValidationRejectsMissingTokenWeakPasswordAndMismatch(): void
+    {
+        $errors = Validator::validatePasswordReset([
+            'token' => '   ',
+            'password' => 'short',
+            'confirm_password' => 'different',
+        ]);
+
+        $this->assertArrayHasKey('token', $errors);
+        $this->assertArrayHasKey('password', $errors);
+        $this->assertArrayHasKey('confirm_password', $errors);
+
+        $tooLongErrors = Validator::validatePasswordReset([
+            'token' => str_repeat('a', 64),
+            'password' => str_repeat('x', 129),
+            'confirm_password' => str_repeat('x', 129),
+        ]);
+        $this->assertArrayHasKey('password', $tooLongErrors);
+    }
+
+    public function testPasswordResetValidationPassesForValidPayload(): void
+    {
+        $withConfirm = Validator::validatePasswordReset([
+            'token' => str_repeat('a', 64),
+            'password' => 'NewSecurePass#2026',
+            'confirm_password' => 'NewSecurePass#2026',
+        ]);
+        $this->assertSame([], $withConfirm);
+
+        $withoutConfirm = Validator::validatePasswordReset([
+            'token' => str_repeat('b', 64),
+            'password' => 'NewSecurePass#2026',
+        ]);
+        $this->assertSame([], $withoutConfirm);
+    }
 }

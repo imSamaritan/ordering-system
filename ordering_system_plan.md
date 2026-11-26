@@ -35,6 +35,7 @@ Target engine: **MySQL 8.4** (`InnoDB`, `utf8mb4_unicode_ci`). All migrations an
 | :--- | :--- | :--- |
 | `users` | `id` (PK), `role` (`customer\|company\|supplier`), `company_name`, `contact_name`, `email` (UK), `phone`, `location`, `password_hash`, `email_verified_at`, `is_active`, timestamps | Unified auth & profile table; powers Supplier company cards; login requires verified email. |
 | `email_verifications` | `id` (PK), `user_id` (FK), `token_hash` (`CHAR 64` UK), `expires_at`, `used_at`, `created_at` | SHA-256 hashed 24-hour verification tokens sent on registration. |
+| `password_resets` | `id` (PK), `user_id` (FK), `hashed_token` (`VARCHAR 100` UK), `expiry_date`, `created_at` | SHA-256 hashed password reset tokens (minimum 7-minute MySQL `NOW()` / `INTERVAL` TTL); self-cleaning on reset, replacement, or expiry. |
 | `categories` | `id` (PK), `name` (UK), `slug` (UK), `sort_order` | Seeded with Fruit, Vegetable, Herb, Mushrooms, Eggs. |
 | `units` | `id` (PK), `name` (UK), `allow_decimal`, `step_size` (`DECIMAL 4,2`) | `kg` (`allow_decimal=1`, `step_size=0.10`); `Unit` & `Punnet` (`0`, `1.00`). |
 | `products` | `id` (PK), `category_id` (FK), `unit_id` (FK), `sku` (UK), `slug` (UK), `description`, `image_path`, `unit_price` (`DECIMAL 10,2`), `stock_quantity`, `is_active` | 98 seeded items with ZAR pricing, active stock flag, and generated image paths. |
@@ -88,6 +89,8 @@ ordering-system/
 | | `GET /auth/verify-email` | Public | Verify email token & activate account |
 | | `POST /auth/resend-verification` | Public | Resend verification link |
 | | `POST /auth/login` | Public | Authenticate verified account & set JWT `HttpOnly` cookie |
+| | `POST /auth/forgot-password` | Public | Issue 7-minute hashed reset token & email (fakes success on invalid/unknown/inactive input) |
+| | `POST /auth/reset-password` | Public | Validate MySQL-checked token, update password, and clean up `password_resets` |
 | | `POST /auth/logout` / `GET /auth/me` | Auth | Clear JWT cookie / return active user profile |
 | **Storefront** | `GET /products` & `GET /categories` | Public | Active stock with category, unit step size, ZAR price & image |
 | **Orders** | `POST /orders` | Cust/Comp | Create order, issue order number, email customer & supplier |
@@ -119,6 +122,7 @@ ordering-system/
 6. **Phase 6 — Supplier Dashboard, Product Management, Order Lifecycle & Emails:** Company cards, status transitions, full supplier product CRUD (add, edit, update products & ZAR pricing), SMTP alerts/updates, and end-to-end verification.
 7. **Phase 7 — Mobile-First Responsive UI Across All Devices:** Full mobile & tablet responsiveness across every template and interactive flow — collapsible sticky mobile navigation drawer with always-accessible cart trigger, mobile-safe toast positioning, horizontally scrollable category filter pills, dynamic-viewport (`100dvh`) slide-over cart drawer with safe-area padding, mobile card views alongside desktop tables for Customer Invoices, Supplier Company Orders, and Supplier Inventory, touch-friendly controls, responsive filter grids, and overflow-safe modals across Storefront, Auth, Customer Dashboard, and Supplier Portal.
 8. **Phase 8 — Extensible Dark Mode & Safe Light Mode:** Implement full dark mode support across every template, modal, drawer, table, badge, form control, and toast while preserving light mode as a safe, regression-free default. Built on an extensible theme registry (`themeStore.ts`), `data-theme` / `.dark` attribute switching with Tailwind v4 `@custom-variant dark` and semantic CSS tokens, zero-FOUC inline initialization, `localStorage` persistence with cross-tab sync, live `prefers-color-scheme` (`system`) tracking, and accessible desktop & mobile theme switchers designed so additional color modes can be registered cleanly without refactoring UI plumbing.
+9. **Phase 9 — Password Reset Flow (MySQL Expiry, Self-Cleaning Tokens & Anti-Enumeration):** Implement end-to-end forgot-password and reset-password flows backed by the `password_resets` Phinx migration (`user_id`, `hashed_token` unique, `expiry_date`, `created_at`). All token lifespans (`DATE_ADD(NOW(), INTERVAL 7 MINUTE)`, minimum 7 minutes) and validity checks (`expiry_date > NOW()` returning strict `bool`) run directly in MySQL; expired, superseded, and redeemed rows are automatically cleaned up from `password_resets`; misleading/invalid/unknown/inactive email requests fake sending with an identical `200 OK` response to prevent user enumeration; includes `/forgot-password` and `/reset-password` views, Alpine.js/TypeScript forms, `email_logs` integration, and full PHPUnit coverage. See [`password_reset_plan.md`](password_reset_plan.md) for the complete specification.
 
 ### Mandatory Release Gate After Every Phase
 
