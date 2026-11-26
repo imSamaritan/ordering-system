@@ -13,6 +13,15 @@ use Throwable;
 
 final class OrderService
 {
+    /** @var array<string, list<string>> */
+    public const ALLOWED_TRANSITIONS = [
+        'pending' => ['received', 'in_progress', 'delivered', 'declined'],
+        'received' => ['in_progress', 'delivered', 'declined'],
+        'in_progress' => ['delivered', 'declined'],
+        'delivered' => [],
+        'declined' => [],
+    ];
+
     public function __construct(
         private readonly Connection $db,
         private readonly ProductRepository $productRepository,
@@ -22,6 +31,12 @@ final class OrderService
         private readonly string $currencySymbol = 'R',
         private readonly string $appName = 'Produce & Inventory Ordering System'
     ) {
+    }
+
+    public static function canTransition(string $fromStatus, string $toStatus): bool
+    {
+        $allowed = self::ALLOWED_TRANSITIONS[$fromStatus] ?? [];
+        return in_array($toStatus, $allowed, true);
     }
 
     /**
@@ -355,5 +370,214 @@ HTML;
             'customer_sent' => $customerRes['sent'],
             'supplier_sent' => $supplierRes['sent'],
         ];
+    }
+
+    /**
+     * Transitions an order's lifecycle status as a supplier, restores stock if declined,
+     * records an audit entry in order_status_history, and emails the customer.
+     *
+     * @return array{
+     *   ok: bool,
+     *   status: int,
+     *   message: string,
+     *   errors?: array<string, string>,
+     *   order?: array<string, mixed>,
+     *   email_sent?: bool
+     * }
+     */
+    public function transitionOrderStatus(
+        int $orderId,
+        string $newStatus,
+        int $supplierUserId,
+        ?string $note = null
+    ): array {
+        $normalizedStatus = strtolower(trim($newStatus));
+        $validTargets = ['received', 'in_progress', 'delivered', 'declined'];
+        if (!in_array($normalizedStatus, $validTargets, true)) {
+            return [
+                'ok' => false,
+                'status' => 422,
+                'message' => 'Invalid target status. Allowed values: received, in_progress, delivered, declined.',
+                'errors' => ['status' => 'Status must be one of: received, in_progress, delivered, declined.'],
+            ];
+        }
+
+        $trimmedNote = $note !== null ? trim($note) : '';
+        if (mb_strlen($trimmedNote) > 1000) {
+            return [
+                'ok' => false,
+                'status' => 422,
+                'message' => 'Status note must not exceed 1000 characters.',
+                'errors' => ['note' => 'Note must not exceed 1000 characters.'],
+            ];
+        }
+
+        $now = date('Y-m-d H:i:s');
+
+        $this->db->begin();
+        try {
+            $lockedOrder = $this->orderRepository->findByIdForUpdate($orderId);
+            if ($lockedOrder === null) {
+                $this->db->rollback();
+                return [
+                    'ok' => false,
+                    'status' => 404,
+                    'message' => 'Order not found.',
+                ];
+            }
+
+            $oldStatus = (string) $lockedOrder['status'];
+            if (!self::canTransition($oldStatus, $normalizedStatus)) {
+                $this->db->rollback();
+                return [
+                    'ok' => false,
+                    'status' => 422,
+                    'message' => sprintf(
+                        'Cannot transition order from "%s" to "%s".',
+                        $oldStatus,
+                        $normalizedStatus
+                    ),
+                    'errors' => ['status' => "Transition from {$oldStatus} to {$normalizedStatus} is not permitted."],
+                ];
+            }
+
+            $receivedAt = $lockedOrder['received_at'];
+            $deliveredAt = $lockedOrder['delivered_at'];
+
+            if (in_array($normalizedStatus, ['received', 'in_progress', 'delivered'], true) && $receivedAt === null) {
+                $receivedAt = $now;
+            }
+            if ($normalizedStatus === 'delivered' && $deliveredAt === null) {
+                $deliveredAt = $now;
+            }
+
+            $this->orderRepository->updateStatusAndLogHistory(
+                $orderId,
+                $oldStatus,
+                $normalizedStatus,
+                $supplierUserId,
+                $trimmedNote !== '' ? $trimmedNote : null,
+                $receivedAt,
+                $deliveredAt,
+                $now
+            );
+
+            // Restore reserved inventory if the order is declined
+            if ($normalizedStatus === 'declined') {
+                $items = $this->orderRepository->findItemsByOrderId($orderId);
+                foreach ($items as $item) {
+                    $this->productRepository->incrementStock(
+                        (int) $item['product_id'],
+                        (float) $item['quantity']
+                    );
+                }
+            }
+
+            $this->db->commit();
+        } catch (Throwable $e) {
+            $this->db->rollback();
+            throw $e;
+        }
+
+        $updatedOrder = $this->orderRepository->findOrderDetailForSupplier($orderId);
+        if ($updatedOrder === null) {
+            throw new RuntimeException('Failed to reload updated order.');
+        }
+
+        $emailSent = $this->sendStatusUpdateEmail($updatedOrder, $oldStatus, $normalizedStatus, $trimmedNote);
+
+        return [
+            'ok' => true,
+            'status' => 200,
+            'message' => sprintf(
+                'Order %s updated to %s.',
+                (string) $updatedOrder['order_number'],
+                self::formatStatusLabel($normalizedStatus)
+            ),
+            'order' => $updatedOrder,
+            'email_sent' => $emailSent,
+        ];
+    }
+
+    public static function formatStatusLabel(string $status): string
+    {
+        return match ($status) {
+            'received' => 'Received',
+            'in_progress' => 'In Progress',
+            'delivered' => 'Delivered',
+            'declined' => 'Declined',
+            default => 'Pending',
+        };
+    }
+
+    /**
+     * @param array<string, mixed> $order
+     */
+    private function sendStatusUpdateEmail(
+        array $order,
+        string $oldStatus,
+        string $newStatus,
+        string $note
+    ): bool {
+        /** @var array<string, mixed>|null $customer */
+        $customer = $order['customer'] ?? null;
+        if ($customer === null || empty($customer['email'])) {
+            return false;
+        }
+
+        $orderNumber = (string) $order['order_number'];
+        $statusLabel = self::formatStatusLabel($newStatus);
+        $oldLabel = self::formatStatusLabel($oldStatus);
+        $totalFormatted = $this->currencySymbol . number_format((float) $order['total_amount'], 2);
+        $customerName = (string) ($customer['contact_name'] ?? 'Customer');
+        $customerEmail = (string) $customer['email'];
+        $customerId = (int) $customer['id'];
+        $orderId = (int) $order['id'];
+
+        $safeOrderNumber = htmlspecialchars($orderNumber, ENT_QUOTES, 'UTF-8');
+        $safeCustomerName = htmlspecialchars($customerName, ENT_QUOTES, 'UTF-8');
+        $safeAppName = htmlspecialchars($this->appName, ENT_QUOTES, 'UTF-8');
+        $safeStatusLabel = htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8');
+        $safeOldLabel = htmlspecialchars($oldLabel, ENT_QUOTES, 'UTF-8');
+
+        $accentColor = match ($newStatus) {
+            'delivered' => '#065f46',
+            'declined' => '#991b1b',
+            'in_progress' => '#1d4ed8',
+            default => '#92400e',
+        };
+
+        $noteHtml = '';
+        if ($note !== '') {
+            $safeNote = nl2br(htmlspecialchars($note, ENT_QUOTES, 'UTF-8'));
+            $noteHtml = "<p style=\"background:#f5f5f4;border-left:3px solid {$accentColor};padding:10px 12px;margin:14px 0;\"><strong>Supplier Note:</strong><br>{$safeNote}</p>";
+        }
+
+        $html = <<<HTML
+<div style="font-family:Segoe UI,Arial,sans-serif;max-width:600px;margin:0 auto;color:#1c1917;">
+  <h2 style="color:{$accentColor};">Order Status Update — {$safeOrderNumber}</h2>
+  <p>Hi {$safeCustomerName},</p>
+  <p>Your order <strong>{$safeOrderNumber}</strong> with <strong>{$safeAppName}</strong> has been updated from <strong>{$safeOldLabel}</strong> to <strong style="color:{$accentColor};">{$safeStatusLabel}</strong>.</p>
+  {$noteHtml}
+  <p style="font-size:14px;color:#57534e;">Order Total: <strong>{$totalFormatted}</strong></p>
+</div>
+HTML;
+
+        $plainText = "Hi {$customerName}, your order {$orderNumber} status changed from {$oldLabel} to {$statusLabel}."
+            . ($note !== '' ? " Note: {$note}" : '')
+            . " Total: {$totalFormatted}.";
+
+        $res = $this->emailService->send(
+            $customerId,
+            $customerEmail,
+            $customerName,
+            'order_status_update',
+            "Order {$orderNumber} Update: {$statusLabel}",
+            $html,
+            $plainText,
+            $orderId
+        );
+
+        return $res['sent'];
     }
 }

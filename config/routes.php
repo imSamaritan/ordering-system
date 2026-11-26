@@ -7,6 +7,7 @@ use App\Controllers\CatalogController;
 use App\Controllers\CustomerDashboardController;
 use App\Controllers\OrderController;
 use App\Controllers\ReportController;
+use App\Controllers\SupplierDashboardController;
 use App\Middleware\JwtCookieAuthMiddleware;
 use App\Middleware\RoleMiddleware;
 use App\Support\ResponseHelper;
@@ -36,6 +37,14 @@ return static function (App $app): void {
     // Customer / Company Dashboard web view
     $app->get('/dashboard', [CustomerDashboardController::class, 'showDashboard'])
         ->add(new RoleMiddleware('customer', 'company'))
+        ->add(JwtCookieAuthMiddleware::class);
+
+    // Supplier Dashboard & Inventory web views
+    $app->get('/supplier', [SupplierDashboardController::class, 'showDashboard'])
+        ->add(new RoleMiddleware('supplier'))
+        ->add(JwtCookieAuthMiddleware::class);
+    $app->get('/supplier/inventory', [SupplierDashboardController::class, 'showInventory'])
+        ->add(new RoleMiddleware('supplier'))
         ->add(JwtCookieAuthMiddleware::class);
 
     $app->group('/api/v1', function (RouteCollectorProxy $group): void {
@@ -89,6 +98,21 @@ return static function (App $app): void {
             ->add(JwtCookieAuthMiddleware::class);
         $group->get('/customer/reports/pdf', [ReportController::class, 'customerStatementPdf'])
             ->add(new RoleMiddleware('customer', 'company'))
+            ->add(JwtCookieAuthMiddleware::class);
+
+        // Supplier Portal & Inventory CRUD API endpoints
+        $group->group('/supplier', function (RouteCollectorProxy $supplier): void {
+            $supplier->get('/companies', [SupplierDashboardController::class, 'companies']);
+            $supplier->get('/companies/{id:[0-9]+}/orders', [SupplierDashboardController::class, 'companyOrders']);
+            $supplier->get('/orders/{id:[0-9]+}', [SupplierDashboardController::class, 'orderDetail']);
+            $supplier->patch('/orders/{id:[0-9]+}/status', [SupplierDashboardController::class, 'updateOrderStatus']);
+
+            $supplier->get('/products', [SupplierDashboardController::class, 'products']);
+            $supplier->post('/products', [SupplierDashboardController::class, 'createProduct']);
+            $supplier->patch('/products/{id:[0-9]+}', [SupplierDashboardController::class, 'updateProduct']);
+            $supplier->delete('/products/{id:[0-9]+}', [SupplierDashboardController::class, 'deleteProduct']);
+        })
+            ->add(new RoleMiddleware('supplier'))
             ->add(JwtCookieAuthMiddleware::class);
     });
 };
