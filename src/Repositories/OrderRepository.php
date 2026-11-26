@@ -273,6 +273,211 @@ final class OrderRepository
     }
 
     /**
+     * Lists orders for the supplier portal, optionally scoped to a specific buyer account.
+     *
+     * @param array{
+     *   date_from?: ?string,
+     *   date_to?: ?string,
+     *   order_number?: ?string,
+     *   statuses?: list<string>
+     * } $filters
+     * @return list<array<string, mixed>>
+     */
+    public function findOrdersForSupplier(?int $userId = null, array $filters = []): array
+    {
+        $conditions = [];
+        $args = [];
+
+        if ($userId !== null) {
+            $conditions[] = 'o.user_id = %i';
+            $args[] = $userId;
+        }
+
+        if (!empty($filters['date_from'])) {
+            $conditions[] = 'o.ordered_at >= %s';
+            $args[] = $filters['date_from'] . ' 00:00:00';
+        }
+
+        if (!empty($filters['date_to'])) {
+            $conditions[] = 'o.ordered_at <= %s';
+            $args[] = $filters['date_to'] . ' 23:59:59';
+        }
+
+        if (!empty($filters['order_number'])) {
+            $conditions[] = 'o.order_number LIKE %~like~';
+            $args[] = $filters['order_number'];
+        }
+
+        if (!empty($filters['statuses'])) {
+            $conditions[] = 'o.status IN %in';
+            $args[] = $filters['statuses'];
+        }
+
+        $sql = 'SELECT
+                    o.*,
+                    u.company_name AS customer_company_name,
+                    u.contact_name AS customer_contact_name,
+                    u.email AS customer_email,
+                    u.phone AS customer_phone,
+                    u.location AS customer_location,
+                    COUNT(oi.id) AS item_count
+                FROM orders o
+                INNER JOIN users u ON u.id = o.user_id
+                LEFT JOIN order_items oi ON oi.order_id = o.id';
+
+        if ($conditions !== []) {
+            $sql .= ' WHERE ' . implode(' AND ', $conditions);
+        }
+
+        $sql .= ' GROUP BY o.id, u.company_name, u.contact_name, u.email, u.phone, u.location
+                  ORDER BY o.ordered_at DESC, o.id DESC';
+
+        $rows = $this->db->query($sql, ...$args)->fetchAll();
+
+        $orders = [];
+        foreach ($rows as $row) {
+            $data = $row->toArray();
+            $order = $this->normalizeOrderRow($data);
+            $order['item_count'] = (int) ($data['item_count'] ?? 0);
+            $order['customer'] = [
+                'id' => (int) $data['user_id'],
+                'company_name' => $data['customer_company_name'] !== null ? (string) $data['customer_company_name'] : null,
+                'contact_name' => (string) $data['customer_contact_name'],
+                'email' => (string) $data['customer_email'],
+                'phone' => $data['customer_phone'] !== null ? (string) $data['customer_phone'] : null,
+                'location' => $data['customer_location'] !== null ? (string) $data['customer_location'] : null,
+            ];
+            $orders[] = $order;
+        }
+
+        return $orders;
+    }
+
+    /**
+     * Returns full order details (customer, line items, status history) for supplier review.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function findOrderDetailForSupplier(int $orderId): ?array
+    {
+        $orderRow = $this->db->query(
+            'SELECT
+                o.*,
+                u.company_name AS customer_company_name,
+                u.contact_name AS customer_contact_name,
+                u.email AS customer_email,
+                u.phone AS customer_phone,
+                u.location AS customer_location
+             FROM orders o
+             INNER JOIN users u ON u.id = o.user_id
+             WHERE o.id = %i
+             LIMIT 1',
+            $orderId
+        )->fetch();
+
+        if (!$orderRow) {
+            return null;
+        }
+
+        $data = $orderRow->toArray();
+        $order = $this->normalizeOrderRow($data);
+        $order['customer'] = [
+            'id' => (int) $data['user_id'],
+            'company_name' => $data['customer_company_name'] !== null ? (string) $data['customer_company_name'] : null,
+            'contact_name' => (string) $data['customer_contact_name'],
+            'email' => (string) $data['customer_email'],
+            'phone' => $data['customer_phone'] !== null ? (string) $data['customer_phone'] : null,
+            'location' => $data['customer_location'] !== null ? (string) $data['customer_location'] : null,
+        ];
+
+        $items = $this->findItemsByOrderId($orderId);
+        $order['items'] = $items;
+        $order['item_count'] = count($items);
+
+        $historyRows = $this->db->query(
+            'SELECT h.id, h.old_status, h.new_status, h.note, h.changed_at, u.contact_name AS changed_by_name, u.role AS changed_by_role
+             FROM order_status_history h
+             LEFT JOIN users u ON u.id = h.changed_by_user_id
+             WHERE h.order_id = %i
+             ORDER BY h.changed_at ASC, h.id ASC',
+            $orderId
+        )->fetchAll();
+
+        $history = [];
+        foreach ($historyRows as $historyRow) {
+            $h = $historyRow->toArray();
+            $history[] = [
+                'id' => (int) $h['id'],
+                'old_status' => $h['old_status'] !== null ? (string) $h['old_status'] : null,
+                'new_status' => (string) $h['new_status'],
+                'note' => $h['note'] !== null ? (string) $h['note'] : null,
+                'changed_at' => $this->formatDateTime($h['changed_at'] ?? null),
+                'changed_by_name' => $h['changed_by_name'] !== null ? (string) $h['changed_by_name'] : null,
+                'changed_by_role' => $h['changed_by_role'] !== null ? (string) $h['changed_by_role'] : null,
+            ];
+        }
+        $order['status_history'] = $history;
+
+        return $order;
+    }
+
+    /**
+     * Locks an order row for status update inside an active transaction.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function findByIdForUpdate(int $orderId): ?array
+    {
+        $row = $this->db->query('SELECT * FROM orders WHERE id = %i FOR UPDATE', $orderId)->fetch();
+        return $row ? $this->normalizeOrderRow($row->toArray()) : null;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function findItemsByOrderId(int $orderId): array
+    {
+        $itemRows = $this->db->query(
+            'SELECT * FROM order_items WHERE order_id = %i ORDER BY id ASC',
+            $orderId
+        )->fetchAll();
+
+        $items = [];
+        foreach ($itemRows as $itemRow) {
+            $items[] = $this->normalizeOrderItemRow($itemRow->toArray());
+        }
+
+        return $items;
+    }
+
+    public function updateStatusAndLogHistory(
+        int $orderId,
+        string $oldStatus,
+        string $newStatus,
+        int $changedByUserId,
+        ?string $note,
+        ?string $receivedAt,
+        ?string $deliveredAt,
+        string $now
+    ): void {
+        $this->db->query('UPDATE orders SET', [
+            'status' => $newStatus,
+            'received_at' => $receivedAt,
+            'delivered_at' => $deliveredAt,
+            'updated_at' => $now,
+        ], 'WHERE id = %i', $orderId);
+
+        $this->db->query('INSERT INTO order_status_history', [
+            'order_id' => $orderId,
+            'old_status' => $oldStatus,
+            'new_status' => $newStatus,
+            'changed_by_user_id' => $changedByUserId,
+            'note' => $note,
+            'changed_at' => $now,
+        ]);
+    }
+
+    /**
      * @param array<string, mixed> $data
      * @return array<string, mixed>
      */

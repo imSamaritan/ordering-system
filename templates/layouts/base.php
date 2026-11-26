@@ -54,7 +54,10 @@ $base = $basePath ?? '';
                 </template>
 
                 <template x-if="$store.auth.user && $store.auth.user.role === 'supplier'">
-                    <a href="<?= htmlspecialchars($base . '/supplier', ENT_QUOTES, 'UTF-8') ?>" class="hover:text-emerald-200 transition-colors">Supplier Portal</a>
+                    <div class="flex items-center gap-4">
+                        <a href="<?= htmlspecialchars($base . '/supplier', ENT_QUOTES, 'UTF-8') ?>" class="hover:text-emerald-200 transition-colors">Supplier Portal</a>
+                        <a href="<?= htmlspecialchars($base . '/supplier/inventory', ENT_QUOTES, 'UTF-8') ?>" class="hover:text-emerald-200 transition-colors">Inventory</a>
+                    </div>
                 </template>
 
                 <template x-if="!$store.auth.user">

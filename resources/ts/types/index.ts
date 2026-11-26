@@ -85,6 +85,15 @@ export interface OrderStatusHistoryEntry {
   changed_by_role: UserRole | null;
 }
 
+export interface OrderCustomerSummary {
+  id: number;
+  company_name: string | null;
+  contact_name: string;
+  email: string;
+  phone: string | null;
+  location: string | null;
+}
+
 export interface Order {
   id: number;
   order_number: string;
@@ -98,6 +107,44 @@ export interface Order {
   item_count?: number;
   items?: OrderItem[];
   status_history?: OrderStatusHistoryEntry[];
+  customer?: OrderCustomerSummary;
+}
+
+export interface SupplierCompanyCard {
+  id: number;
+  role: UserRole;
+  company_name: string | null;
+  contact_name: string;
+  display_name: string;
+  email: string;
+  phone: string | null;
+  location: string | null;
+  email_verified_at: string | null;
+  is_active: boolean;
+  total_orders: number;
+  pending_orders: number;
+  received_orders: number;
+  in_progress_orders: number;
+  delivered_orders: number;
+  declined_orders: number;
+  total_spend: number;
+  last_ordered_at: string | null;
+}
+
+export interface SupplierCompaniesSummary {
+  total_companies: number;
+  total_orders: number;
+  pending_orders: number;
+  in_progress_orders: number;
+  delivered_orders: number;
+  total_revenue: number;
+}
+
+export interface SupplierInventorySummary {
+  total: number;
+  active: number;
+  inactive: number;
+  low_stock: number;
 }
 
 export interface CustomerOrdersSummary {

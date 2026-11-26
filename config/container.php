@@ -7,6 +7,7 @@ use App\Controllers\CatalogController;
 use App\Controllers\CustomerDashboardController;
 use App\Controllers\OrderController;
 use App\Controllers\ReportController;
+use App\Controllers\SupplierDashboardController;
 use App\Middleware\JwtCookieAuthMiddleware;
 use App\Repositories\EmailLogRepository;
 use App\Repositories\EmailVerificationRepository;
@@ -15,6 +16,7 @@ use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use App\Services\AuthService;
 use App\Services\EmailService;
+use App\Services\InventoryService;
 use App\Services\OrderService;
 use App\Services\PdfReportService;
 use App\Services\VerificationService;
@@ -181,5 +183,17 @@ return [
     ReportController::class => static fn (ContainerInterface $c): ReportController => new ReportController(
         $c->get(OrderRepository::class),
         $c->get(PdfReportService::class)
+    ),
+
+    InventoryService::class => static fn (ContainerInterface $c): InventoryService => new InventoryService(
+        $c->get(ProductRepository::class)
+    ),
+
+    SupplierDashboardController::class => static fn (ContainerInterface $c): SupplierDashboardController => new SupplierDashboardController(
+        $c->get(UserRepository::class),
+        $c->get(OrderRepository::class),
+        $c->get(OrderService::class),
+        $c->get(InventoryService::class),
+        $c->get(PhpRenderer::class)
     ),
 ];
