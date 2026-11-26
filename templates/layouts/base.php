@@ -13,7 +13,7 @@ $assetBase = ($basePath ?? '') . '/assets';
 $base = $basePath ?? '';
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light" data-theme-preference="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,11 +21,32 @@ $base = $basePath ?? '';
     <meta name="app-base-path" content="<?= htmlspecialchars($base, ENT_QUOTES, 'UTF-8') ?>">
     <meta name="app-currency" content="<?= htmlspecialchars($currency ?? 'ZAR', ENT_QUOTES, 'UTF-8') ?>">
     <meta name="app-currency-symbol" content="<?= htmlspecialchars($currencySymbol ?? 'R', ENT_QUOTES, 'UTF-8') ?>">
+    <script>
+        (function () {
+            try {
+                var key = 'fresh_produce_theme_preference';
+                var pref = window.localStorage.getItem(key) || 'light';
+                var isSystem = pref === 'system';
+                var prefersDark = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var resolved = isSystem ? (prefersDark ? 'dark' : 'light') : pref;
+                var isDark = resolved === 'dark';
+                var root = document.documentElement;
+                root.dataset.theme = resolved;
+                root.dataset.themePreference = pref;
+                root.classList.toggle('dark', isDark);
+                root.style.colorScheme = isDark ? 'dark' : 'light';
+            } catch (e) {
+                document.documentElement.dataset.theme = 'light';
+                document.documentElement.dataset.themePreference = 'light';
+                document.documentElement.style.colorScheme = 'light';
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="<?= htmlspecialchars($assetBase . '/css/app.css', ENT_QUOTES, 'UTF-8') ?>">
 </head>
-<body class="min-h-screen bg-stone-50 text-stone-900 antialiased flex flex-col overflow-x-hidden">
+<body class="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100 antialiased flex flex-col overflow-x-hidden transition-colors duration-200">
     <header
-        class="sticky top-0 z-40 bg-emerald-900 text-white shadow-sm"
+        class="sticky top-0 z-40 bg-emerald-900 dark:bg-emerald-950 dark:border-b dark:border-emerald-900/80 text-white shadow-sm transition-colors duration-200"
         x-data="{ mobileMenuOpen: false }"
         @keydown.escape.window="mobileMenuOpen = false"
     >
@@ -53,6 +74,29 @@ $base = $basePath ?? '';
                         x-text="$store.cart.totalItems"
                         class="inline-flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-amber-400 text-emerald-950 text-[11px] font-bold"
                     ></span>
+                </button>
+
+                <button
+                    type="button"
+                    @click="$store.theme.cycle()"
+                    :title="'Theme: ' + $store.theme.currentDefinition().label + ' (click to switch to ' + $store.theme.nextDefinition().label + ')'"
+                    :aria-label="'Switch theme mode. Current: ' + $store.theme.currentDefinition().label"
+                    data-theme-toggle="desktop"
+                    class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-800/70 hover:bg-emerald-700 dark:bg-emerald-900/80 dark:hover:bg-emerald-800 px-2.5 py-1.5 text-xs font-semibold text-emerald-50 transition-colors cursor-pointer"
+                >
+                    <svg x-show="$store.theme.currentDefinition().icon === 'sun'" class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                    </svg>
+                    <svg x-show="$store.theme.currentDefinition().icon === 'moon'" x-cloak class="w-4 h-4 text-emerald-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                    </svg>
+                    <svg x-show="$store.theme.currentDefinition().icon === 'monitor'" x-cloak class="w-4 h-4 text-sky-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+                    </svg>
+                    <svg x-show="$store.theme.currentDefinition().icon === 'palette'" x-cloak class="w-4 h-4 text-amber-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z" />
+                    </svg>
+                    <span x-text="$store.theme.currentDefinition().shortLabel">Light</span>
                 </button>
 
                 <template x-if="$store.auth.user && ($store.auth.user.role === 'customer' || $store.auth.user.role === 'company')">
@@ -87,8 +131,30 @@ $base = $basePath ?? '';
                 </template>
             </nav>
 
-            <!-- Mobile Header Actions (Cart + Hamburger) -->
+            <!-- Mobile Header Actions (Theme + Cart + Hamburger) -->
             <div class="flex md:hidden items-center gap-2 shrink-0">
+                <button
+                    type="button"
+                    @click="$store.theme.cycle()"
+                    :title="'Theme: ' + $store.theme.currentDefinition().label"
+                    :aria-label="'Switch theme mode. Current: ' + $store.theme.currentDefinition().label"
+                    data-theme-toggle="mobile"
+                    class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-800/80 hover:bg-emerald-700 dark:bg-emerald-900/80 dark:hover:bg-emerald-800 text-white transition-colors cursor-pointer"
+                >
+                    <svg x-show="$store.theme.currentDefinition().icon === 'sun'" class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                    </svg>
+                    <svg x-show="$store.theme.currentDefinition().icon === 'moon'" x-cloak class="w-4 h-4 text-emerald-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                    </svg>
+                    <svg x-show="$store.theme.currentDefinition().icon === 'monitor'" x-cloak class="w-4 h-4 text-sky-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+                    </svg>
+                    <svg x-show="$store.theme.currentDefinition().icon === 'palette'" x-cloak class="w-4 h-4 text-amber-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z" />
+                    </svg>
+                </button>
+
                 <button
                     type="button"
                     @click="mobileMenuOpen = false; $store.cart.toggle()"
@@ -171,6 +237,24 @@ $base = $basePath ?? '';
                 </div>
             </template>
 
+            <div class="pt-2 mt-2 border-t border-emerald-800 px-1">
+                <p class="text-[11px] font-semibold uppercase tracking-wider text-emerald-300/90 mb-1.5">Appearance</p>
+                <div class="grid grid-cols-3 gap-1.5" role="group" aria-label="Theme mode selection">
+                    <template x-for="mode in $store.theme.modes" :key="mode.id">
+                        <button
+                            type="button"
+                            @click="$store.theme.setPreference(mode.id)"
+                            :aria-pressed="($store.theme.preference === mode.id).toString()"
+                            :class="$store.theme.preference === mode.id
+                                ? 'bg-emerald-600 text-white border-emerald-400 shadow-xs'
+                                : 'bg-emerald-900/70 text-emerald-100 border-emerald-800 hover:bg-emerald-800'"
+                            class="rounded-lg border px-2.5 py-2 text-xs font-semibold transition-colors cursor-pointer text-center"
+                            x-text="mode.shortLabel"
+                        ></button>
+                    </template>
+                </div>
+            </div>
+
             <template x-if="!$store.auth.user">
                 <div class="pt-2 mt-2 border-t border-emerald-800 grid grid-cols-2 gap-2">
                     <a
@@ -218,9 +302,9 @@ $base = $basePath ?? '';
             <div
                 class="pointer-events-auto rounded-lg shadow-lg px-4 py-3 text-sm font-medium flex items-center justify-between gap-3 border"
                 :class="{
-                    'bg-emerald-50 text-emerald-900 border-emerald-200': toast.type === 'success',
-                    'bg-red-50 text-red-900 border-red-200': toast.type === 'error',
-                    'bg-stone-900 text-white border-stone-700': toast.type === 'info'
+                    'bg-emerald-50 text-emerald-900 border-emerald-200 dark:bg-emerald-950/95 dark:text-emerald-100 dark:border-emerald-800': toast.type === 'success',
+                    'bg-red-50 text-red-900 border-red-200 dark:bg-red-950/95 dark:text-red-100 dark:border-red-800': toast.type === 'error',
+                    'bg-stone-900 text-white border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:border-stone-700': toast.type === 'info'
                 }"
             >
                 <span class="min-w-0 break-words" x-text="toast.text"></span>
@@ -229,7 +313,7 @@ $base = $basePath ?? '';
         </template>
     </div>
 
-    <footer class="border-t border-stone-200 bg-white py-5 sm:py-6 px-4 text-center text-xs text-stone-500">
+    <footer class="border-t border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 py-5 sm:py-6 px-4 text-center text-xs text-stone-500 dark:text-stone-400 transition-colors duration-200">
         &copy; <?= date('Y') ?> <?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?> &middot; Currency: <?= htmlspecialchars($currency ?? 'ZAR', ENT_QUOTES, 'UTF-8') ?> (<?= htmlspecialchars($currencySymbol ?? 'R', ENT_QUOTES, 'UTF-8') ?>)
     </footer>
 
