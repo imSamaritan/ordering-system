@@ -1,6 +1,6 @@
 import Alpine from 'alpinejs';
 import { createAuthStore, type AuthStore } from './authStore.js';
-import { createCartStore } from './cartStore.js';
+import { createCartStore, type CartStore } from './cartStore.js';
 import { createToastStore } from './toast.js';
 
 declare global {
@@ -17,6 +17,8 @@ Alpine.store('toast', createToastStore());
 
 document.addEventListener('DOMContentLoaded', () => {
   Alpine.start();
+  const cart = Alpine.store('cart') as CartStore;
+  cart.init();
   const auth = Alpine.store('auth') as AuthStore;
   void auth.init();
 });

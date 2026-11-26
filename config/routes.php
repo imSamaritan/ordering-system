@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 use App\Controllers\AuthController;
+use App\Controllers\CatalogController;
+use App\Controllers\OrderController;
 use App\Middleware\JwtCookieAuthMiddleware;
+use App\Middleware\RoleMiddleware;
 use App\Support\ResponseHelper;
 use Dibi\Connection;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -59,6 +62,15 @@ return static function (App $app): void {
 
         // Authenticated Auth API endpoints
         $group->get('/auth/me', [AuthController::class, 'me'])
+            ->add(JwtCookieAuthMiddleware::class);
+
+        // Public Storefront Catalog API endpoints
+        $group->get('/categories', [CatalogController::class, 'categories']);
+        $group->get('/products', [CatalogController::class, 'products']);
+
+        // Customer / Company Order Placement
+        $group->post('/orders', [OrderController::class, 'create'])
+            ->add(new RoleMiddleware('customer', 'company'))
             ->add(JwtCookieAuthMiddleware::class);
     });
 };

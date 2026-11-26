@@ -24,6 +24,7 @@ export interface Category {
   name: string;
   slug: string;
   sort_order: number;
+  product_count?: number;
 }
 
 export interface Unit {
