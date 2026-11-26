@@ -6,7 +6,7 @@ return [
     'app' => [
         'name' => $_ENV['APP_NAME'] ?? 'Fresh Produce',
         'env' => $_ENV['APP_ENV'] ?? 'local',
-        'debug' => filter_var($_ENV['APP_DEBUG'] ?? 'true', FILTER_VALIDATE_BOOLEAN),
+        'debug' => filter_var($_ENV['APP_DEBUG'] ?? 'false', FILTER_VALIDATE_BOOLEAN),
         'url' => rtrim((string) ($_ENV['APP_URL'] ?? 'http://localhost/projects/ordering-system'), '/'),
         'base_path' => rtrim((string) ($_ENV['APP_BASE_PATH'] ?? ''), '/'),
         'currency' => $_ENV['APP_CURRENCY'] ?? 'ZAR',

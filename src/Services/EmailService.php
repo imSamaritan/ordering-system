@@ -53,7 +53,7 @@ final class EmailService
             $mailer->isSMTP();
             $mailer->Host = (string) ($this->smtpSettings['host'] ?? '127.0.0.1');
             $mailer->Port = (int) ($this->smtpSettings['port'] ?? 1025);
-            $mailer->Timeout = 5;
+            $mailer->Timeout = 15;
             $mailer->CharSet = PHPMailer::CHARSET_UTF8;
 
             $user = (string) ($this->smtpSettings['user'] ?? '');

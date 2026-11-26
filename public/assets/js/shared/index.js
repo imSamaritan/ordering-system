@@ -23,4 +23,3 @@ alpinejs/dist/module.esm.js:
     **)
   *)
 */
-//# sourceMappingURL=index.js.map

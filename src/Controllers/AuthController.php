@@ -154,7 +154,7 @@ final class AuthController
             return ResponseHelper::error($response, $result['message'], $result['status'], $errors);
         }
 
-        $isSecure = $request->getUri()->getScheme() === 'https';
+        $isSecure = $this->isHttpsRequest($request);
         $cookieHeader = $this->authService->buildAuthCookieHeader((string) $result['token'], $isSecure);
 
         $response = $response->withAddedHeader('Set-Cookie', $cookieHeader);
@@ -167,7 +167,7 @@ final class AuthController
 
     public function logout(Request $request, Response $response): Response
     {
-        $isSecure = $request->getUri()->getScheme() === 'https';
+        $isSecure = $this->isHttpsRequest($request);
         $cookieHeader = $this->authService->buildClearCookieHeader($isSecure);
         $response = $response->withAddedHeader('Set-Cookie', $cookieHeader);
 
@@ -222,6 +222,16 @@ final class AuthController
         return ResponseHelper::json($response, [
             'user' => $user,
         ]);
+    }
+
+    private function isHttpsRequest(Request $request): bool
+    {
+        if ($request->getUri()->getScheme() === 'https') {
+            return true;
+        }
+
+        $forwardedProto = strtolower(trim($request->getHeaderLine('X-Forwarded-Proto')));
+        return $forwardedProto === 'https';
     }
 
     /**
