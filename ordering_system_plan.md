@@ -117,6 +117,7 @@ ordering-system/
 4. **Phase 4 — Storefront & Decimal Cart Checkout:** Active stock UI, `0.1 kg` / `1 Unit` TypeScript/Alpine.js cart, order placement & order numbering.
 5. **Phase 5 — Customer Dashboard & PDF Statements:** Date-range/order-number filtering, total spend across selected invoices, and Dompdf statement generation.
 6. **Phase 6 — Supplier Dashboard, Product Management, Order Lifecycle & Emails:** Company cards, status transitions, full supplier product CRUD (add, edit, update products & ZAR pricing), SMTP alerts/updates, and end-to-end verification.
+7. **Phase 7 — Mobile-First Responsive UI Across All Devices:** Full mobile & tablet responsiveness across every template and interactive flow — collapsible sticky mobile navigation drawer with always-accessible cart trigger, mobile-safe toast positioning, horizontally scrollable category filter pills, dynamic-viewport (`100dvh`) slide-over cart drawer with safe-area padding, mobile card views alongside desktop tables for Customer Invoices, Supplier Company Orders, and Supplier Inventory, touch-friendly controls, responsive filter grids, and overflow-safe modals across Storefront, Auth, Customer Dashboard, and Supplier Portal.
 
 ### Mandatory Release Gate After Every Phase
 
