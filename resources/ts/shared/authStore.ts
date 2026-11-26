@@ -1,5 +1,6 @@
 import type { User } from '../types/index.js';
 import { apiRequest } from './api.js';
+import type { CartStore } from './cartStore.js';
 
 export interface AuthStore {
   user: User | null;
@@ -18,6 +19,10 @@ export function createAuthStore(): AuthStore {
       try {
         const res = await apiRequest<{ user: User }>('/auth/me');
         this.user = res.success && res.data ? res.data.user : null;
+        if (this.user?.role === 'supplier') {
+          const cart = window.Alpine?.store('cart') as CartStore | undefined;
+          cart?.close();
+        }
       } catch {
         this.user = null;
       } finally {

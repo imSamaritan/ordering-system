@@ -1,5 +1,6 @@
 import Alpine from 'alpinejs';
 import { createAuthStore, type AuthStore } from './authStore.js';
+import { cartDrawer } from './cartDrawer.js';
 import { createCartStore, type CartStore } from './cartStore.js';
 import { createThemeStore, type ThemeStore } from './themeStore.js';
 import { createToastStore } from './toast.js';
@@ -16,6 +17,7 @@ Alpine.store('theme', createThemeStore());
 Alpine.store('auth', createAuthStore());
 Alpine.store('cart', createCartStore());
 Alpine.store('toast', createToastStore());
+Alpine.data('cartDrawer', cartDrawer);
 
 document.addEventListener('DOMContentLoaded', () => {
   const theme = Alpine.store('theme') as ThemeStore;

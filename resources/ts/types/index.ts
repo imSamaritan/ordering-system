@@ -78,6 +78,7 @@ export interface CartItem {
   /** Stored as integer tenths (e.g. 1.3 kg => 13, 2 Unit => 20) to avoid float drift */
   quantityTenths: number;
   imagePath: string | null;
+  maxStock?: number;
 }
 
 export interface OrderItem {
