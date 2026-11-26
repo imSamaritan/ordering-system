@@ -17,7 +17,10 @@ export interface CartDrawerComponent {
   orderNotes: string;
   submittingOrder: boolean;
   checkoutError: string;
+  brokenImages: Record<number, boolean>;
   incrementCartItem(productId: number): void;
+  productImageUrl(imagePath: string | null | undefined): string;
+  markImageBroken(productId: number): void;
   formatPrice(amount: number): string;
   submitOrder(): Promise<void>;
   loginUrl(): string;
@@ -29,6 +32,7 @@ export function cartDrawer(): CartDrawerComponent {
     orderNotes: '',
     submittingOrder: false,
     checkoutError: '',
+    brokenImages: {},
 
     incrementCartItem(productId: number): void {
       const cart = window.Alpine.store('cart') as CartStore;
@@ -37,6 +41,24 @@ export function cartDrawer(): CartDrawerComponent {
       if (!ok) {
         toast.push('Maximum available stock reached for this item.', 'error');
       }
+    },
+
+    productImageUrl(imagePath: string | null | undefined): string {
+      if (!imagePath) {
+        return '';
+      }
+      const trimmed = imagePath.trim();
+      if (trimmed === '') {
+        return '';
+      }
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+        return trimmed;
+      }
+      return `${getBasePath()}/${trimmed.replace(/^\/+/, '')}`;
+    },
+
+    markImageBroken(productId: number): void {
+      this.brokenImages[productId] = true;
     },
 
     formatPrice(amount: number): string {

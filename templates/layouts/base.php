@@ -370,11 +370,30 @@ $base = $basePath ?? '';
                 <template x-for="item in $store.cart.items" :key="item.productId">
                     <div class="rounded-xl border border-stone-200 dark:border-stone-800 p-3.5 bg-stone-50/70 dark:bg-stone-800/60">
                         <div class="flex items-start justify-between gap-2">
-                            <div class="min-w-0">
-                                <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100 break-words" x-text="item.description"></h3>
-                                <p class="text-xs text-stone-500 dark:text-stone-400">
-                                    <span x-text="formatPrice(item.unitPrice)"></span> / <span x-text="item.unitName"></span>
-                                </p>
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div
+                                    data-cart-item-thumb="true"
+                                    class="w-12 h-12 rounded-lg bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 overflow-hidden shrink-0 flex items-center justify-center"
+                                >
+                                    <template x-if="productImageUrl(item.imagePath) && !brokenImages[item.productId]">
+                                        <img
+                                            :src="productImageUrl(item.imagePath)"
+                                            :alt="item.description"
+                                            loading="lazy"
+                                            @error="markImageBroken(item.productId)"
+                                            class="w-full h-full object-cover"
+                                        >
+                                    </template>
+                                    <template x-if="!productImageUrl(item.imagePath) || brokenImages[item.productId]">
+                                        <span class="text-[10px] font-semibold text-stone-400 dark:text-stone-500">IMG</span>
+                                    </template>
+                                </div>
+                                <div class="min-w-0">
+                                    <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100 break-words" x-text="item.description"></h3>
+                                    <p class="text-xs text-stone-500 dark:text-stone-400">
+                                        <span x-text="formatPrice(item.unitPrice)"></span> / <span x-text="item.unitName"></span>
+                                    </p>
+                                </div>
                             </div>
                             <button
                                 type="button"
