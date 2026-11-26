@@ -33,6 +33,7 @@ final class SchemaAndSeedTest extends TestCase
         $expectedTables = [
             'users',
             'email_verifications',
+            'password_resets',
             'categories',
             'units',
             'products',

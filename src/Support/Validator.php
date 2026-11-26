@@ -86,4 +86,31 @@ final class Validator
         $trimmed = trim($email);
         return $trimmed !== '' && filter_var($trimmed, FILTER_VALIDATE_EMAIL) !== false;
     }
+
+    /**
+     * @param array<string, mixed> $input
+     * @return array<string, string>
+     */
+    public static function validatePasswordReset(array $input): array
+    {
+        $errors = [];
+
+        $token = trim((string) ($input['token'] ?? ''));
+        if ($token === '') {
+            $errors['token'] = 'A valid password reset token is required.';
+        }
+
+        $password = (string) ($input['password'] ?? '');
+        if (mb_strlen($password) < 8) {
+            $errors['password'] = 'Password must be at least 8 characters long.';
+        } elseif (mb_strlen($password) > 128) {
+            $errors['password'] = 'Password must not exceed 128 characters.';
+        }
+
+        if (array_key_exists('confirm_password', $input) && (string) $input['confirm_password'] !== $password) {
+            $errors['confirm_password'] = 'Passwords do not match.';
+        }
+
+        return $errors;
+    }
 }

@@ -72,6 +72,15 @@ final class UserRepository
         );
     }
 
+    public function updatePassword(int $userId, string $passwordHash): void
+    {
+        $this->db->query(
+            'UPDATE users SET password_hash = %s, updated_at = NOW() WHERE id = %i',
+            $passwordHash,
+            $userId
+        );
+    }
+
     /**
      * Lists all customer & company accounts with aggregated order metrics for the supplier portal.
      *

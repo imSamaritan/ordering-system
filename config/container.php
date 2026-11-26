@@ -12,12 +12,14 @@ use App\Middleware\JwtCookieAuthMiddleware;
 use App\Repositories\EmailLogRepository;
 use App\Repositories\EmailVerificationRepository;
 use App\Repositories\OrderRepository;
+use App\Repositories\PasswordResetRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use App\Services\AuthService;
 use App\Services\EmailService;
 use App\Services\InventoryService;
 use App\Services\OrderService;
+use App\Services\PasswordResetService;
 use App\Services\PdfReportService;
 use App\Services\VerificationService;
 use App\Support\ViewRenderer;
@@ -71,6 +73,10 @@ return [
         $c->get(Connection::class)
     ),
 
+    PasswordResetRepository::class => static fn (ContainerInterface $c): PasswordResetRepository => new PasswordResetRepository(
+        $c->get(Connection::class)
+    ),
+
     EmailLogRepository::class => static fn (ContainerInterface $c): EmailLogRepository => new EmailLogRepository(
         $c->get(Connection::class)
     ),
@@ -97,6 +103,21 @@ return [
             $container->get(EmailService::class),
             (string) ($settings['app']['url'] ?? 'http://localhost/projects/ordering-system'),
             (string) ($settings['app']['name'] ?? 'Produce & Inventory Ordering System')
+        );
+    },
+
+    PasswordResetService::class => static function (ContainerInterface $container): PasswordResetService {
+        /** @var array<string, mixed> $settings */
+        $settings = $container->get('settings');
+
+        return new PasswordResetService(
+            $container->get(Connection::class),
+            $container->get(PasswordResetRepository::class),
+            $container->get(UserRepository::class),
+            $container->get(EmailService::class),
+            (string) ($settings['app']['url'] ?? 'http://localhost/projects/ordering-system'),
+            (string) ($settings['app']['name'] ?? 'Produce & Inventory Ordering System'),
+            (bool) ($settings['app']['debug'] ?? false)
         );
     },
 
@@ -130,6 +151,7 @@ return [
     AuthController::class => static fn (ContainerInterface $c): AuthController => new AuthController(
         $c->get(AuthService::class),
         $c->get(VerificationService::class),
+        $c->get(PasswordResetService::class),
         $c->get(PhpRenderer::class)
     ),
 

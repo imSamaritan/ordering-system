@@ -52,7 +52,10 @@ $base = $basePath ?? '';
             </div>
 
             <div>
-                <label for="login-password" class="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1">Password</label>
+                <div class="flex items-center justify-between mb-1">
+                    <label for="login-password" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Password</label>
+                    <a href="<?= htmlspecialchars($base . '/forgot-password', ENT_QUOTES, 'UTF-8') ?>" class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-300">Forgot password?</a>
+                </div>
                 <input
                     id="login-password"
                     type="password"
