@@ -9,18 +9,18 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
     <!-- Page Header & Tab Switcher -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <h1 class="text-xl sm:text-2xl font-bold text-stone-900 tracking-tight">Supplier Operations Portal</h1>
-            <p class="text-sm text-stone-600 mt-1">
+            <h1 class="text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100 tracking-tight">Supplier Operations Portal</h1>
+            <p class="text-sm text-stone-600 dark:text-stone-400 mt-1">
                 Manage buyer company accounts, process order lifecycle statuses, and maintain your fresh produce catalog &amp; ZAR pricing.
             </p>
         </div>
 
-        <div class="grid grid-cols-2 sm:inline-flex w-full sm:w-auto rounded-xl border border-stone-200 bg-white p-1 shadow-xs sm:self-start">
+        <div class="grid grid-cols-2 sm:inline-flex w-full sm:w-auto rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-1 shadow-xs sm:self-start">
             <button
                 type="button"
                 @click="switchTab('companies')"
                 class="px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors cursor-pointer text-center"
-                :class="activeTab === 'companies' ? 'bg-emerald-800 text-white shadow-xs' : 'text-stone-600 hover:text-stone-900'"
+                :class="activeTab === 'companies' ? 'bg-emerald-800 dark:bg-emerald-600 text-white shadow-xs' : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'"
             >
                 Companies &amp; Orders
             </button>
@@ -28,7 +28,7 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                 type="button"
                 @click="switchTab('inventory')"
                 class="px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors cursor-pointer text-center"
-                :class="activeTab === 'inventory' ? 'bg-emerald-800 text-white shadow-xs' : 'text-stone-600 hover:text-stone-900'"
+                :class="activeTab === 'inventory' ? 'bg-emerald-800 dark:bg-emerald-600 text-white shadow-xs' : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'"
             >
                 Inventory &amp; Pricing
             </button>
@@ -39,32 +39,32 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
     <div x-show="activeTab === 'companies'" class="space-y-5 sm:space-y-6">
         <!-- Supplier KPI Cards -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <div class="rounded-xl border border-stone-200 bg-white p-4 sm:p-5 shadow-xs">
-                <div class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-stone-500">Buyer Accounts</div>
-                <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl font-bold text-stone-900" x-text="companiesSummary.total_companies"></div>
-                <div class="mt-1 text-[11px] sm:text-xs text-stone-500">Customers &amp; companies</div>
+            <div class="rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-4 sm:p-5 shadow-xs">
+                <div class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400">Buyer Accounts</div>
+                <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl font-bold text-stone-900 dark:text-stone-100" x-text="companiesSummary.total_companies"></div>
+                <div class="mt-1 text-[11px] sm:text-xs text-stone-500 dark:text-stone-400">Customers &amp; companies</div>
             </div>
 
-            <div class="rounded-xl border border-amber-200 bg-amber-50/70 p-4 sm:p-5 shadow-xs">
-                <div class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-amber-800">Pending Review</div>
-                <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl font-bold text-amber-950" x-text="companiesSummary.pending_orders"></div>
-                <div class="mt-1 text-[11px] sm:text-xs text-amber-800">
+            <div class="rounded-xl border border-amber-200 dark:border-amber-800/70 bg-amber-50/70 dark:bg-amber-950/35 p-4 sm:p-5 shadow-xs">
+                <div class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-amber-800 dark:text-amber-300">Pending Review</div>
+                <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl font-bold text-amber-950 dark:text-amber-100" x-text="companiesSummary.pending_orders"></div>
+                <div class="mt-1 text-[11px] sm:text-xs text-amber-800 dark:text-amber-300">
                     In pipeline: <span x-text="companiesSummary.in_progress_orders"></span>
                 </div>
             </div>
 
-            <div class="rounded-xl border border-stone-200 bg-white p-4 sm:p-5 shadow-xs">
-                <div class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-stone-500">Total Orders</div>
-                <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl font-bold text-stone-900" x-text="companiesSummary.total_orders"></div>
-                <div class="mt-1 text-[11px] sm:text-xs text-stone-500">
+            <div class="rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-4 sm:p-5 shadow-xs">
+                <div class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400">Total Orders</div>
+                <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl font-bold text-stone-900 dark:text-stone-100" x-text="companiesSummary.total_orders"></div>
+                <div class="mt-1 text-[11px] sm:text-xs text-stone-500 dark:text-stone-400">
                     <span x-text="companiesSummary.delivered_orders"></span> delivered
                 </div>
             </div>
 
-            <div class="rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 sm:p-5 shadow-xs">
-                <div class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-800">Active Revenue</div>
-                <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl font-bold text-emerald-950 truncate" x-text="formatPrice(companiesSummary.total_revenue)"></div>
-                <div class="mt-1 text-[11px] sm:text-xs text-emerald-700">Excluding declined</div>
+            <div class="rounded-xl border border-emerald-200 dark:border-emerald-800/70 bg-emerald-50/80 dark:bg-emerald-950/40 p-4 sm:p-5 shadow-xs">
+                <div class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">Active Revenue</div>
+                <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl font-bold text-emerald-950 dark:text-emerald-100 truncate" x-text="formatPrice(companiesSummary.total_revenue)"></div>
+                <div class="mt-1 text-[11px] sm:text-xs text-emerald-700 dark:text-emerald-400">Excluding declined</div>
             </div>
         </div>
 
@@ -74,12 +74,12 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                 type="text"
                 x-model="companySearch"
                 placeholder="Search companies by name, contact, email, phone, or location..."
-                class="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-base sm:text-sm text-stone-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none"
+                class="flex-1 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-2.5 text-base sm:text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none"
             >
             <div class="flex gap-2">
                 <button
                     type="submit"
-                    class="flex-1 sm:flex-none rounded-xl bg-stone-900 hover:bg-stone-800 text-white px-5 py-2.5 text-sm font-semibold transition-colors cursor-pointer"
+                    class="flex-1 sm:flex-none rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white px-5 py-2.5 text-sm font-semibold transition-colors cursor-pointer"
                 >
                     Search Accounts
                 </button>
@@ -87,7 +87,7 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                     type="button"
                     x-show="companySearch !== ''"
                     @click="companySearch = ''; loadCompanies()"
-                    class="rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-stone-700 px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer"
+                    class="rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer"
                 >
                     Clear
                 </button>
@@ -95,17 +95,17 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
         </form>
 
         <template x-if="companiesError !== ''">
-            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" x-text="companiesError"></div>
+            <div class="rounded-xl border border-red-200 dark:border-red-900/80 bg-red-50 dark:bg-red-950/60 px-4 py-3 text-sm text-red-800 dark:text-red-300" x-text="companiesError"></div>
         </template>
 
         <template x-if="companiesLoading">
-            <div class="rounded-xl border border-stone-200 bg-white p-8 sm:p-10 text-center text-sm text-stone-500">
+            <div class="rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-8 sm:p-10 text-center text-sm text-stone-500 dark:text-stone-400">
                 Loading company accounts...
             </div>
         </template>
 
         <template x-if="!companiesLoading && companies.length === 0 && companiesError === ''">
-            <div class="rounded-xl border border-stone-200 bg-white p-8 sm:p-10 text-center text-sm text-stone-500">
+            <div class="rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-8 sm:p-10 text-center text-sm text-stone-500 dark:text-stone-400">
                 No customer or company accounts matched your search.
             </div>
         </template>
@@ -114,49 +114,49 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
         <div x-show="!companiesLoading && companies.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <template x-for="company in companies" :key="company.id">
                 <div
-                    class="rounded-xl border bg-white p-4 sm:p-5 shadow-xs flex flex-col justify-between gap-4 transition-all"
-                    :class="selectedCompany && selectedCompany.id === company.id ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-stone-200 hover:border-stone-300'"
+                    class="rounded-xl border bg-white dark:bg-stone-900 p-4 sm:p-5 shadow-xs flex flex-col justify-between gap-4 transition-all"
+                    :class="selectedCompany && selectedCompany.id === company.id ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-stone-200 dark:border-stone-800 hover:border-stone-300 dark:hover:border-stone-700'"
                 >
                     <div class="space-y-3">
                         <div class="flex items-start justify-between gap-2">
                             <div class="min-w-0">
-                                <h2 class="text-base font-bold text-stone-900 leading-snug break-words" x-text="company.display_name"></h2>
-                                <p class="text-xs text-stone-500 mt-0.5 truncate" x-show="company.company_name" x-text="'Contact: ' + company.contact_name"></p>
+                                <h2 class="text-base font-bold text-stone-900 dark:text-stone-100 leading-snug break-words" x-text="company.display_name"></h2>
+                                <p class="text-xs text-stone-500 dark:text-stone-400 mt-0.5 truncate" x-show="company.company_name" x-text="'Contact: ' + company.contact_name"></p>
                             </div>
                             <span
                                 class="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide border"
-                                :class="company.role === 'company' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-stone-100 text-stone-700 border-stone-200'"
+                                :class="company.role === 'company' ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-800/80' : 'bg-stone-100 text-stone-700 border-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:border-stone-700'"
                                 x-text="company.role"
                             ></span>
                         </div>
 
-                        <dl class="space-y-1.5 text-xs text-stone-600">
+                        <dl class="space-y-1.5 text-xs text-stone-600 dark:text-stone-400">
                             <div class="flex items-center justify-between gap-2">
-                                <dt class="text-stone-400 shrink-0">Email</dt>
-                                <dd class="font-medium text-stone-800 truncate min-w-0" x-text="company.email"></dd>
+                                <dt class="text-stone-400 dark:text-stone-500 shrink-0">Email</dt>
+                                <dd class="font-medium text-stone-800 dark:text-stone-200 truncate min-w-0" x-text="company.email"></dd>
                             </div>
                             <div class="flex items-center justify-between gap-2">
-                                <dt class="text-stone-400 shrink-0">Phone</dt>
-                                <dd class="font-medium text-stone-800 truncate min-w-0" x-text="company.phone || 'Not provided'"></dd>
+                                <dt class="text-stone-400 dark:text-stone-500 shrink-0">Phone</dt>
+                                <dd class="font-medium text-stone-800 dark:text-stone-200 truncate min-w-0" x-text="company.phone || 'Not provided'"></dd>
                             </div>
                             <div class="flex items-center justify-between gap-2">
-                                <dt class="text-stone-400 shrink-0">Location</dt>
-                                <dd class="font-medium text-stone-800 truncate min-w-0" x-text="company.location || 'Not provided'"></dd>
+                                <dt class="text-stone-400 dark:text-stone-500 shrink-0">Location</dt>
+                                <dd class="font-medium text-stone-800 dark:text-stone-200 truncate min-w-0" x-text="company.location || 'Not provided'"></dd>
                             </div>
                         </dl>
 
-                        <div class="grid grid-cols-3 gap-2 pt-2 border-t border-stone-100 text-center">
-                            <div class="rounded-lg bg-stone-50 py-1.5 px-1.5 sm:px-2 min-w-0">
-                                <div class="text-xs sm:text-sm font-bold text-stone-900" x-text="company.total_orders"></div>
-                                <div class="text-[11px] text-stone-500">Orders</div>
+                        <div class="grid grid-cols-3 gap-2 pt-2 border-t border-stone-100 dark:border-stone-800 text-center">
+                            <div class="rounded-lg bg-stone-50 dark:bg-stone-800/80 py-1.5 px-1.5 sm:px-2 min-w-0">
+                                <div class="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100" x-text="company.total_orders"></div>
+                                <div class="text-[11px] text-stone-500 dark:text-stone-400">Orders</div>
                             </div>
-                            <div class="rounded-lg bg-amber-50 py-1.5 px-1.5 sm:px-2 min-w-0">
-                                <div class="text-xs sm:text-sm font-bold text-amber-800" x-text="company.pending_orders"></div>
-                                <div class="text-[11px] text-amber-700">Pending</div>
+                            <div class="rounded-lg bg-amber-50 dark:bg-amber-950/40 py-1.5 px-1.5 sm:px-2 min-w-0">
+                                <div class="text-xs sm:text-sm font-bold text-amber-800 dark:text-amber-300" x-text="company.pending_orders"></div>
+                                <div class="text-[11px] text-amber-700 dark:text-amber-400">Pending</div>
                             </div>
-                            <div class="rounded-lg bg-emerald-50 py-1.5 px-1.5 sm:px-2 min-w-0">
-                                <div class="text-xs sm:text-sm font-bold text-emerald-800 truncate" x-text="formatPrice(company.total_spend)"></div>
-                                <div class="text-[11px] text-emerald-700">Spend</div>
+                            <div class="rounded-lg bg-emerald-50 dark:bg-emerald-950/40 py-1.5 px-1.5 sm:px-2 min-w-0">
+                                <div class="text-xs sm:text-sm font-bold text-emerald-800 dark:text-emerald-300 truncate" x-text="formatPrice(company.total_spend)"></div>
+                                <div class="text-[11px] text-emerald-700 dark:text-emerald-400">Spend</div>
                             </div>
                         </div>
                     </div>
@@ -164,7 +164,7 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                     <button
                         type="button"
                         @click="openCompanyDetails(company)"
-                        class="w-full min-h-10 sm:min-h-9 rounded-lg bg-emerald-800 hover:bg-emerald-700 text-white px-4 py-2 text-xs font-semibold transition-colors cursor-pointer"
+                        class="w-full min-h-10 sm:min-h-9 rounded-lg bg-emerald-800 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600 text-white px-4 py-2 text-xs font-semibold transition-colors cursor-pointer"
                     >
                         View More Details
                     </button>
@@ -174,8 +174,8 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
 
         <!-- Selected Company Orders Panel -->
         <template x-if="selectedCompany">
-            <div class="rounded-2xl border border-emerald-200 bg-white shadow-sm overflow-hidden">
-                <div class="px-4 sm:px-5 py-4 bg-emerald-900 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="rounded-2xl border border-emerald-200 dark:border-emerald-800/80 bg-white dark:bg-stone-900 shadow-sm overflow-hidden">
+                <div class="px-4 sm:px-5 py-4 bg-emerald-900 dark:bg-emerald-950 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div class="min-w-0">
                         <h3 class="text-base font-bold break-words" x-text="selectedCompany.display_name + ' — Order History'"></h3>
                         <p class="text-xs text-emerald-100 mt-0.5 break-words">
@@ -194,11 +194,11 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                 </div>
 
                 <!-- Company Orders Filter Bar -->
-                <div class="px-4 sm:px-5 py-3.5 border-b border-stone-200 bg-stone-50 flex flex-col sm:flex-row sm:items-center gap-2.5">
+                <div class="px-4 sm:px-5 py-3.5 border-b border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950/60 flex flex-col sm:flex-row sm:items-center gap-2.5">
                     <select
                         x-model="companyOrderStatusFilter"
                         @change="loadCompanyOrders()"
-                        class="w-full sm:w-auto rounded-lg border border-stone-300 bg-white px-3 py-2 sm:py-1.5 text-sm sm:text-xs font-medium text-stone-800 outline-none focus:border-emerald-500"
+                        class="w-full sm:w-auto rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-2 sm:py-1.5 text-sm sm:text-xs font-medium text-stone-800 dark:text-stone-200 outline-none focus:border-emerald-500"
                     >
                         <option value="all">All Statuses</option>
                         <option value="pending">Pending</option>
@@ -213,11 +213,11 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                             type="text"
                             x-model="companyOrderNumberFilter"
                             placeholder="Filter by order #..."
-                            class="flex-1 min-w-0 rounded-lg border border-stone-300 bg-white px-3 py-2 sm:py-1.5 text-sm sm:text-xs text-stone-800 outline-none focus:border-emerald-500"
+                            class="flex-1 min-w-0 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-2 sm:py-1.5 text-sm sm:text-xs text-stone-800 dark:text-stone-200 placeholder:text-stone-400 dark:placeholder:text-stone-500 outline-none focus:border-emerald-500"
                         >
                         <button
                             type="submit"
-                            class="shrink-0 rounded-lg bg-stone-900 hover:bg-stone-800 text-white px-3.5 py-2 sm:py-1.5 text-xs font-semibold cursor-pointer"
+                            class="shrink-0 rounded-lg bg-stone-900 hover:bg-stone-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white px-3.5 py-2 sm:py-1.5 text-xs font-semibold cursor-pointer"
                         >
                             Apply
                         </button>
@@ -225,28 +225,28 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                 </div>
 
                 <template x-if="companyOrdersError !== ''">
-                    <div class="p-4 text-sm text-red-700 bg-red-50" x-text="companyOrdersError"></div>
+                    <div class="p-4 text-sm text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/60" x-text="companyOrdersError"></div>
                 </template>
 
                 <template x-if="companyOrdersLoading">
-                    <div class="p-8 text-center text-sm text-stone-500">Loading company orders...</div>
+                    <div class="p-8 text-center text-sm text-stone-500 dark:text-stone-400">Loading company orders...</div>
                 </template>
 
                 <template x-if="!companyOrdersLoading && companyOrders.length === 0 && companyOrdersError === ''">
-                    <div class="p-8 text-center text-sm text-stone-500">
+                    <div class="p-8 text-center text-sm text-stone-500 dark:text-stone-400">
                         No orders found for this account with the selected filter.
                     </div>
                 </template>
 
                 <!-- Mobile Company Order Cards -->
                 <template x-if="!companyOrdersLoading && companyOrders.length > 0">
-                    <div class="md:hidden divide-y divide-stone-200">
+                    <div class="md:hidden divide-y divide-stone-200 dark:divide-stone-800">
                         <template x-for="order in companyOrders" :key="order.id">
                             <div class="p-4 space-y-2.5">
                                 <div class="flex items-start justify-between gap-2">
                                     <div class="min-w-0">
-                                        <div class="font-mono text-sm font-bold text-stone-900 truncate" x-text="order.order_number"></div>
-                                        <div class="text-xs text-stone-500 mt-0.5" x-text="order.ordered_at"></div>
+                                        <div class="font-mono text-sm font-bold text-stone-900 dark:text-stone-100 truncate" x-text="order.order_number"></div>
+                                        <div class="text-xs text-stone-500 dark:text-stone-400 mt-0.5" x-text="order.ordered_at"></div>
                                     </div>
                                     <span
                                         class="shrink-0 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border"
@@ -254,14 +254,14 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                                         x-text="statusLabel(order.status)"
                                     ></span>
                                 </div>
-                                <div class="flex items-center justify-between text-xs text-stone-600">
-                                    <span><strong class="text-stone-900" x-text="order.item_count ?? 0"></strong> item(s)</span>
-                                    <span class="text-sm font-bold text-stone-900 font-mono" x-text="formatPrice(order.total_amount)"></span>
+                                <div class="flex items-center justify-between text-xs text-stone-600 dark:text-stone-400">
+                                    <span><strong class="text-stone-900 dark:text-stone-100" x-text="order.item_count ?? 0"></strong> item(s)</span>
+                                    <span class="text-sm font-bold text-stone-900 dark:text-stone-100 font-mono" x-text="formatPrice(order.total_amount)"></span>
                                 </div>
                                 <button
                                     type="button"
                                     @click="openOrderModal(order.id)"
-                                    class="w-full rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 px-3 py-2 text-xs font-semibold transition-colors cursor-pointer"
+                                    class="w-full rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 px-3 py-2 text-xs font-semibold transition-colors cursor-pointer"
                                 >
                                     Manage Order
                                 </button>
@@ -273,8 +273,8 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                 <!-- Desktop Company Orders Table -->
                 <template x-if="!companyOrdersLoading && companyOrders.length > 0">
                     <div class="hidden md:block overflow-x-auto">
-                        <table class="min-w-full divide-y divide-stone-200 text-sm">
-                            <thead class="bg-stone-50 text-xs uppercase tracking-wider text-stone-500">
+                        <table class="min-w-full divide-y divide-stone-200 dark:divide-stone-800 text-sm">
+                            <thead class="bg-stone-50 dark:bg-stone-950/60 text-xs uppercase tracking-wider text-stone-500 dark:text-stone-400">
                                 <tr>
                                     <th class="px-4 py-3 text-left font-semibold">Order #</th>
                                     <th class="px-4 py-3 text-left font-semibold">Ordered Date</th>
@@ -284,11 +284,11 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                                     <th class="px-4 py-3 text-right font-semibold">Action</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-stone-100">
+                            <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
                                 <template x-for="order in companyOrders" :key="order.id">
-                                    <tr class="hover:bg-stone-50/80">
-                                        <td class="px-4 py-3 font-mono font-semibold text-stone-900 whitespace-nowrap" x-text="order.order_number"></td>
-                                        <td class="px-4 py-3 text-stone-600 whitespace-nowrap" x-text="order.ordered_at"></td>
+                                    <tr class="hover:bg-stone-50/80 dark:hover:bg-stone-800/60">
+                                        <td class="px-4 py-3 font-mono font-semibold text-stone-900 dark:text-stone-100 whitespace-nowrap" x-text="order.order_number"></td>
+                                        <td class="px-4 py-3 text-stone-600 dark:text-stone-400 whitespace-nowrap" x-text="order.ordered_at"></td>
                                         <td class="px-4 py-3 whitespace-nowrap">
                                             <span
                                                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border"
@@ -296,13 +296,13 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                                                 x-text="statusLabel(order.status)"
                                             ></span>
                                         </td>
-                                        <td class="px-4 py-3 text-right text-stone-600" x-text="order.item_count ?? 0"></td>
-                                        <td class="px-4 py-3 text-right font-semibold text-stone-900 whitespace-nowrap" x-text="formatPrice(order.total_amount)"></td>
+                                        <td class="px-4 py-3 text-right text-stone-600 dark:text-stone-400" x-text="order.item_count ?? 0"></td>
+                                        <td class="px-4 py-3 text-right font-semibold text-stone-900 dark:text-stone-100 whitespace-nowrap" x-text="formatPrice(order.total_amount)"></td>
                                         <td class="px-4 py-3 text-right whitespace-nowrap">
                                             <button
                                                 type="button"
                                                 @click="openOrderModal(order.id)"
-                                                class="rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 px-3 py-1 text-xs font-semibold transition-colors cursor-pointer"
+                                                class="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 px-3 py-1 text-xs font-semibold transition-colors cursor-pointer"
                                             >
                                                 Manage Order
                                             </button>
@@ -321,38 +321,38 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
     <div x-show="activeTab === 'inventory'" x-cloak class="space-y-5 sm:space-y-6">
         <!-- Inventory Summary Cards -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <div class="rounded-xl border border-stone-200 bg-white p-4 sm:p-5 shadow-xs">
-                <div class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-stone-500">Catalog Items</div>
-                <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl font-bold text-stone-900" x-text="inventorySummary.total"></div>
+            <div class="rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-4 sm:p-5 shadow-xs">
+                <div class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400">Catalog Items</div>
+                <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl font-bold text-stone-900 dark:text-stone-100" x-text="inventorySummary.total"></div>
             </div>
-            <div class="rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 sm:p-5 shadow-xs">
-                <div class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-800">Active on Storefront</div>
-                <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl font-bold text-emerald-950" x-text="inventorySummary.active"></div>
+            <div class="rounded-xl border border-emerald-200 dark:border-emerald-800/70 bg-emerald-50/80 dark:bg-emerald-950/40 p-4 sm:p-5 shadow-xs">
+                <div class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">Active on Storefront</div>
+                <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl font-bold text-emerald-950 dark:text-emerald-100" x-text="inventorySummary.active"></div>
             </div>
-            <div class="rounded-xl border border-stone-200 bg-white p-4 sm:p-5 shadow-xs">
-                <div class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-stone-500">Inactive / Hidden</div>
-                <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl font-bold text-stone-700" x-text="inventorySummary.inactive"></div>
+            <div class="rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-4 sm:p-5 shadow-xs">
+                <div class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400">Inactive / Hidden</div>
+                <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl font-bold text-stone-700 dark:text-stone-300" x-text="inventorySummary.inactive"></div>
             </div>
-            <div class="rounded-xl border border-amber-200 bg-amber-50/70 p-4 sm:p-5 shadow-xs">
-                <div class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-amber-800">Low Stock (&le; 10)</div>
-                <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl font-bold text-amber-950" x-text="inventorySummary.low_stock"></div>
+            <div class="rounded-xl border border-amber-200 dark:border-amber-800/70 bg-amber-50/70 dark:bg-amber-950/35 p-4 sm:p-5 shadow-xs">
+                <div class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-amber-800 dark:text-amber-300">Low Stock (&le; 10)</div>
+                <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl font-bold text-amber-950 dark:text-amber-100" x-text="inventorySummary.low_stock"></div>
             </div>
         </div>
 
         <!-- Inventory Filters & Add Button -->
-        <div class="rounded-xl border border-stone-200 bg-white p-4 shadow-xs flex flex-col lg:flex-row gap-3 lg:items-center justify-between">
+        <div class="rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-4 shadow-xs flex flex-col lg:flex-row gap-3 lg:items-center justify-between">
             <form @submit.prevent="loadInventory()" class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-center gap-2.5 flex-1">
                 <input
                     type="text"
                     x-model="productSearch"
                     placeholder="Search description, SKU, or category..."
-                    class="w-full sm:col-span-2 lg:flex-1 lg:min-w-[200px] rounded-lg border border-stone-300 px-3 py-2 text-base sm:text-sm text-stone-900 outline-none focus:border-emerald-500"
+                    class="w-full sm:col-span-2 lg:flex-1 lg:min-w-[200px] rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 px-3 py-2 text-base sm:text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 outline-none focus:border-emerald-500"
                 >
 
                 <select
                     x-model="productCategoryFilter"
                     @change="loadInventory()"
-                    class="w-full lg:w-auto rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 outline-none focus:border-emerald-500"
+                    class="w-full lg:w-auto rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 px-3 py-2 text-sm text-stone-800 dark:text-stone-200 outline-none focus:border-emerald-500"
                 >
                     <option value="all">All Categories</option>
                     <template x-for="cat in categories" :key="cat.id">
@@ -363,7 +363,7 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                 <select
                     x-model="productStatusFilter"
                     @change="loadInventory()"
-                    class="w-full lg:w-auto rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 outline-none focus:border-emerald-500"
+                    class="w-full lg:w-auto rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 px-3 py-2 text-sm text-stone-800 dark:text-stone-200 outline-none focus:border-emerald-500"
                 >
                     <option value="all">All Visibility</option>
                     <option value="active">Active Only</option>
@@ -372,7 +372,7 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
 
                 <button
                     type="submit"
-                    class="w-full sm:col-span-2 lg:w-auto rounded-lg bg-stone-900 hover:bg-stone-800 text-white px-4 py-2 text-sm font-semibold cursor-pointer"
+                    class="w-full sm:col-span-2 lg:w-auto rounded-lg bg-stone-900 hover:bg-stone-800 dark:bg-stone-700 dark:hover:bg-stone-600 text-white px-4 py-2 text-sm font-semibold cursor-pointer"
                 >
                     Filter
                 </button>
@@ -381,45 +381,45 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
             <button
                 type="button"
                 @click="openCreateProductModal()"
-                class="w-full lg:w-auto rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white px-4 py-2.5 lg:py-2 text-sm font-semibold shadow-xs transition-colors cursor-pointer shrink-0"
+                class="w-full lg:w-auto rounded-lg bg-emerald-700 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white px-4 py-2.5 lg:py-2 text-sm font-semibold shadow-xs transition-colors cursor-pointer shrink-0"
             >
                 + Add Product
             </button>
         </div>
 
         <template x-if="inventoryError !== ''">
-            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" x-text="inventoryError"></div>
+            <div class="rounded-xl border border-red-200 dark:border-red-900/80 bg-red-50 dark:bg-red-950/60 px-4 py-3 text-sm text-red-800 dark:text-red-300" x-text="inventoryError"></div>
         </template>
 
         <!-- Inventory Table / Mobile Cards -->
-        <div class="rounded-xl border border-stone-200 bg-white shadow-xs overflow-hidden">
+        <div class="rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-xs overflow-hidden">
             <template x-if="inventoryLoading">
-                <div class="p-8 sm:p-10 text-center text-sm text-stone-500">Loading product catalog...</div>
+                <div class="p-8 sm:p-10 text-center text-sm text-stone-500 dark:text-stone-400">Loading product catalog...</div>
             </template>
 
             <template x-if="!inventoryLoading && products.length === 0">
-                <div class="p-8 sm:p-10 text-center text-sm text-stone-500">No products match the selected filters.</div>
+                <div class="p-8 sm:p-10 text-center text-sm text-stone-500 dark:text-stone-400">No products match the selected filters.</div>
             </template>
 
             <!-- Mobile Inventory Cards -->
             <template x-if="!inventoryLoading && products.length > 0">
-                <div class="md:hidden divide-y divide-stone-200">
+                <div class="md:hidden divide-y divide-stone-200 dark:divide-stone-800">
                     <template x-for="product in products" :key="product.id">
-                        <div class="p-4 space-y-3" :class="!product.is_active ? 'opacity-70 bg-stone-50/50' : ''">
+                        <div class="p-4 space-y-3" :class="!product.is_active ? 'opacity-70 bg-stone-50/50 dark:bg-stone-950/40' : ''">
                             <div class="flex items-start justify-between gap-3">
                                 <div class="flex items-center gap-3 min-w-0">
-                                    <div class="w-12 h-12 rounded-lg bg-stone-100 border border-stone-200 overflow-hidden shrink-0 flex items-center justify-center">
+                                    <div class="w-12 h-12 rounded-lg bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 overflow-hidden shrink-0 flex items-center justify-center">
                                         <template x-if="product.image_path">
                                             <img :src="productImageUrl(product.image_path)" :alt="product.description" class="w-full h-full object-cover">
                                         </template>
                                         <template x-if="!product.image_path">
-                                            <span class="text-[10px] font-semibold text-stone-400">IMG</span>
+                                            <span class="text-[10px] font-semibold text-stone-400 dark:text-stone-500">IMG</span>
                                         </template>
                                     </div>
                                     <div class="min-w-0">
-                                        <div class="font-semibold text-sm text-stone-900 break-words" x-text="product.description"></div>
-                                        <div class="text-xs font-mono text-stone-500 truncate" x-text="product.sku"></div>
-                                        <div class="text-[11px] text-stone-500 mt-0.5">
+                                        <div class="font-semibold text-sm text-stone-900 dark:text-stone-100 break-words" x-text="product.description"></div>
+                                        <div class="text-xs font-mono text-stone-500 dark:text-stone-400 truncate" x-text="product.sku"></div>
+                                        <div class="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
                                             <span x-text="product.category_name"></span> &middot; <span x-text="product.unit_name"></span>
                                         </div>
                                     </div>
@@ -428,21 +428,21 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                                     type="button"
                                     @click="toggleProductActive(product)"
                                     class="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border cursor-pointer transition-colors"
-                                    :class="product.is_active ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-stone-100 text-stone-600 border-stone-300'"
+                                    :class="product.is_active ? 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-800/80' : 'bg-stone-100 text-stone-600 border-stone-300 dark:bg-stone-800 dark:text-stone-400 dark:border-stone-700'"
                                     x-text="product.is_active ? 'Active' : 'Inactive'"
                                 ></button>
                             </div>
 
-                            <div class="flex items-center justify-between text-xs pt-2 border-t border-stone-100">
+                            <div class="flex items-center justify-between text-xs pt-2 border-t border-stone-100 dark:border-stone-800">
                                 <div>
-                                    <span class="text-stone-500">Price: </span>
-                                    <span class="font-bold text-sm text-stone-900 font-mono" x-text="formatPrice(product.unit_price)"></span>
+                                    <span class="text-stone-500 dark:text-stone-400">Price: </span>
+                                    <span class="font-bold text-sm text-stone-900 dark:text-stone-100 font-mono" x-text="formatPrice(product.unit_price)"></span>
                                 </div>
                                 <div>
-                                    <span class="text-stone-500">Stock: </span>
+                                    <span class="text-stone-500 dark:text-stone-400">Stock: </span>
                                     <span
                                         class="font-bold text-sm"
-                                        :class="product.stock_quantity <= 10 ? 'text-amber-700' : 'text-stone-800'"
+                                        :class="product.stock_quantity <= 10 ? 'text-amber-700 dark:text-amber-400' : 'text-stone-800 dark:text-stone-200'"
                                         x-text="product.stock_quantity"
                                     ></span>
                                 </div>
@@ -452,7 +452,7 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                                 <button
                                     type="button"
                                     @click="openEditProductModal(product)"
-                                    class="rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 py-2 text-xs font-semibold cursor-pointer"
+                                    class="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 py-2 text-xs font-semibold cursor-pointer"
                                 >
                                     Edit
                                 </button>
@@ -460,7 +460,7 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                                     type="button"
                                     :disabled="deletingProductId === product.id"
                                     @click="deleteProduct(product)"
-                                    class="rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 py-2 text-xs font-semibold cursor-pointer disabled:opacity-50"
+                                    class="rounded-lg border border-red-200 dark:border-red-900/80 bg-red-50 dark:bg-red-950/60 hover:bg-red-100 dark:hover:bg-red-900/60 text-red-700 dark:text-red-300 py-2 text-xs font-semibold cursor-pointer disabled:opacity-50"
                                 >
                                     Delete
                                 </button>
@@ -473,8 +473,8 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
             <!-- Desktop Inventory Table -->
             <template x-if="!inventoryLoading && products.length > 0">
                 <div class="hidden md:block overflow-x-auto">
-                    <table class="min-w-full divide-y divide-stone-200 text-sm">
-                        <thead class="bg-stone-50 text-xs uppercase tracking-wider text-stone-500">
+                    <table class="min-w-full divide-y divide-stone-200 dark:divide-stone-800 text-sm">
+                        <thead class="bg-stone-50 dark:bg-stone-950/60 text-xs uppercase tracking-wider text-stone-500 dark:text-stone-400">
                             <tr>
                                 <th class="px-4 py-3 text-left font-semibold">Product</th>
                                 <th class="px-4 py-3 text-left font-semibold">Category</th>
@@ -485,32 +485,32 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                                 <th class="px-4 py-3 text-right font-semibold">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-stone-100">
+                        <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
                             <template x-for="product in products" :key="product.id">
-                                <tr class="hover:bg-stone-50/70" :class="!product.is_active ? 'opacity-65 bg-stone-50/40' : ''">
+                                <tr class="hover:bg-stone-50/70 dark:hover:bg-stone-800/60" :class="!product.is_active ? 'opacity-65 bg-stone-50/40 dark:bg-stone-950/40' : ''">
                                     <td class="px-4 py-3">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-10 h-10 rounded-lg bg-stone-100 border border-stone-200 overflow-hidden shrink-0 flex items-center justify-center">
+                                            <div class="w-10 h-10 rounded-lg bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 overflow-hidden shrink-0 flex items-center justify-center">
                                                 <template x-if="product.image_path">
                                                     <img :src="productImageUrl(product.image_path)" :alt="product.description" class="w-full h-full object-cover">
                                                 </template>
                                                 <template x-if="!product.image_path">
-                                                    <span class="text-[10px] font-semibold text-stone-400">IMG</span>
+                                                    <span class="text-[10px] font-semibold text-stone-400 dark:text-stone-500">IMG</span>
                                                 </template>
                                             </div>
                                             <div>
-                                                <div class="font-semibold text-stone-900" x-text="product.description"></div>
-                                                <div class="text-xs font-mono text-stone-500" x-text="product.sku"></div>
+                                                <div class="font-semibold text-stone-900 dark:text-stone-100" x-text="product.description"></div>
+                                                <div class="text-xs font-mono text-stone-500 dark:text-stone-400" x-text="product.sku"></div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-3 text-stone-600" x-text="product.category_name"></td>
-                                    <td class="px-4 py-3 text-stone-600" x-text="product.unit_name"></td>
-                                    <td class="px-4 py-3 text-right font-semibold text-stone-900 whitespace-nowrap" x-text="formatPrice(product.unit_price)"></td>
+                                    <td class="px-4 py-3 text-stone-600 dark:text-stone-400" x-text="product.category_name"></td>
+                                    <td class="px-4 py-3 text-stone-600 dark:text-stone-400" x-text="product.unit_name"></td>
+                                    <td class="px-4 py-3 text-right font-semibold text-stone-900 dark:text-stone-100 whitespace-nowrap" x-text="formatPrice(product.unit_price)"></td>
                                     <td class="px-4 py-3 text-right">
                                         <span
                                             class="font-semibold"
-                                            :class="product.stock_quantity <= 10 ? 'text-amber-700' : 'text-stone-800'"
+                                            :class="product.stock_quantity <= 10 ? 'text-amber-700 dark:text-amber-400' : 'text-stone-800 dark:text-stone-200'"
                                             x-text="product.stock_quantity"
                                         ></span>
                                     </td>
@@ -519,7 +519,7 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                                             type="button"
                                             @click="toggleProductActive(product)"
                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border cursor-pointer transition-colors"
-                                            :class="product.is_active ? 'bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-200' : 'bg-stone-100 text-stone-600 border-stone-300 hover:bg-stone-200'"
+                                            :class="product.is_active ? 'bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-200 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-800/80 dark:hover:bg-emerald-900/70' : 'bg-stone-100 text-stone-600 border-stone-300 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-400 dark:border-stone-700 dark:hover:bg-stone-700'"
                                             x-text="product.is_active ? 'Active' : 'Inactive'"
                                         ></button>
                                     </td>
@@ -527,7 +527,7 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                                         <button
                                             type="button"
                                             @click="openEditProductModal(product)"
-                                            class="text-emerald-700 hover:text-emerald-900 text-xs font-semibold cursor-pointer"
+                                            class="text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 text-xs font-semibold cursor-pointer"
                                         >
                                             Edit
                                         </button>
@@ -535,7 +535,7 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                                             type="button"
                                             :disabled="deletingProductId === product.id"
                                             @click="deleteProduct(product)"
-                                            class="text-red-600 hover:text-red-800 text-xs font-semibold cursor-pointer disabled:opacity-50"
+                                            class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-xs font-semibold cursor-pointer disabled:opacity-50"
                                         >
                                             Delete
                                         </button>
@@ -553,33 +553,33 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
     <div
         x-show="orderModalOpen"
         x-cloak
-        class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-stone-900/60"
+        class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-stone-900/60 dark:bg-black/75"
         @keydown.escape.window="closeOrderModal()"
     >
         <div
             @click.away="closeOrderModal()"
-            class="bg-white rounded-2xl shadow-xl border border-stone-200 max-w-2xl w-full max-h-[92dvh] sm:max-h-[90vh] flex flex-col overflow-hidden"
+            class="bg-white dark:bg-stone-900 rounded-2xl shadow-xl border border-stone-200 dark:border-stone-800 max-w-2xl w-full max-h-[92dvh] sm:max-h-[90vh] flex flex-col overflow-hidden"
         >
-            <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-stone-200 flex items-center justify-between gap-2 bg-stone-50 shrink-0">
+            <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between gap-2 bg-stone-50 dark:bg-stone-950/60 shrink-0">
                 <div class="min-w-0">
-                    <h3 class="text-base font-bold text-stone-900 truncate" x-text="activeOrder ? activeOrder.order_number : 'Order Management'"></h3>
-                    <p class="text-xs text-stone-500" x-show="activeOrder" x-text="activeOrder ? 'Ordered: ' + activeOrder.ordered_at : ''"></p>
+                    <h3 class="text-base font-bold text-stone-900 dark:text-stone-100 truncate" x-text="activeOrder ? activeOrder.order_number : 'Order Management'"></h3>
+                    <p class="text-xs text-stone-500 dark:text-stone-400" x-show="activeOrder" x-text="activeOrder ? 'Ordered: ' + activeOrder.ordered_at : ''"></p>
                 </div>
                 <button
                     type="button"
                     @click="closeOrderModal()"
-                    class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 text-xl leading-none cursor-pointer shrink-0"
+                    class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-800 text-xl leading-none cursor-pointer shrink-0"
                     aria-label="Close modal"
                 >&times;</button>
             </div>
 
             <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
                 <template x-if="orderModalLoading">
-                    <div class="py-10 text-center text-sm text-stone-500">Loading order details...</div>
+                    <div class="py-10 text-center text-sm text-stone-500 dark:text-stone-400">Loading order details...</div>
                 </template>
 
                 <template x-if="!orderModalLoading && orderModalError !== ''">
-                    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" x-text="orderModalError"></div>
+                    <div class="rounded-lg border border-red-200 dark:border-red-900/80 bg-red-50 dark:bg-red-950/60 px-4 py-3 text-sm text-red-800 dark:text-red-300" x-text="orderModalError"></div>
                 </template>
 
                 <template x-if="!orderModalLoading && activeOrder">
@@ -590,19 +590,19 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                                 :class="statusBadgeClass(activeOrder.status)"
                                 x-text="statusLabel(activeOrder.status)"
                             ></span>
-                            <div class="text-lg font-bold text-emerald-900" x-text="formatPrice(activeOrder.total_amount)"></div>
+                            <div class="text-lg font-bold text-emerald-900 dark:text-emerald-400" x-text="formatPrice(activeOrder.total_amount)"></div>
                         </div>
 
                         <template x-if="activeOrder.customer">
-                            <div class="rounded-lg bg-stone-50 border border-stone-200 px-3.5 py-2.5 text-xs text-stone-700 space-y-0.5 break-words">
-                                <div class="font-semibold text-stone-900" x-text="activeOrder.customer.company_name || activeOrder.customer.contact_name"></div>
+                            <div class="rounded-lg bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-700 px-3.5 py-2.5 text-xs text-stone-700 dark:text-stone-300 space-y-0.5 break-words">
+                                <div class="font-semibold text-stone-900 dark:text-stone-100" x-text="activeOrder.customer.company_name || activeOrder.customer.contact_name"></div>
                                 <div x-text="activeOrder.customer.contact_name + ' · ' + activeOrder.customer.email"></div>
                                 <div x-show="activeOrder.customer.phone || activeOrder.customer.location" x-text="[activeOrder.customer.phone, activeOrder.customer.location].filter(Boolean).join(' · ')"></div>
                             </div>
                         </template>
 
                         <template x-if="activeOrder.notes">
-                            <div class="rounded-lg bg-amber-50/70 border border-amber-200 px-3.5 py-2.5 text-xs text-amber-950">
+                            <div class="rounded-lg bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/70 px-3.5 py-2.5 text-xs text-amber-950 dark:text-amber-200">
                                 <span class="font-semibold">Customer Notes:</span>
                                 <span x-text="activeOrder.notes"></span>
                             </div>
@@ -610,10 +610,10 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
 
                         <!-- Line Items -->
                         <div>
-                            <h4 class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">Line Items</h4>
-                            <div class="border border-stone-200 rounded-lg overflow-x-auto">
-                                <table class="min-w-full divide-y divide-stone-200 text-xs">
-                                    <thead class="bg-stone-50 text-stone-500">
+                            <h4 class="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2">Line Items</h4>
+                            <div class="border border-stone-200 dark:border-stone-800 rounded-lg overflow-x-auto">
+                                <table class="min-w-full divide-y divide-stone-200 dark:divide-stone-800 text-xs">
+                                    <thead class="bg-stone-50 dark:bg-stone-950/60 text-stone-500 dark:text-stone-400">
                                         <tr>
                                             <th class="px-3 py-2 text-left font-semibold">Product</th>
                                             <th class="px-3 py-2 text-right font-semibold whitespace-nowrap">Qty</th>
@@ -621,13 +621,13 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                                             <th class="px-3 py-2 text-right font-semibold whitespace-nowrap">Line Total</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-stone-100">
+                                    <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
                                         <template x-for="item in (activeOrder.items ?? [])" :key="item.id">
                                             <tr>
-                                                <td class="px-3 py-2 text-stone-900 font-medium" x-text="item.product_name_snapshot"></td>
-                                                <td class="px-3 py-2 text-right text-stone-600 whitespace-nowrap" x-text="formatQty(item)"></td>
-                                                <td class="px-3 py-2 text-right text-stone-600 whitespace-nowrap" x-text="formatPrice(item.unit_price_snapshot)"></td>
-                                                <td class="px-3 py-2 text-right font-semibold text-stone-900 whitespace-nowrap" x-text="formatPrice(item.line_total)"></td>
+                                                <td class="px-3 py-2 text-stone-900 dark:text-stone-100 font-medium" x-text="item.product_name_snapshot"></td>
+                                                <td class="px-3 py-2 text-right text-stone-600 dark:text-stone-400 whitespace-nowrap" x-text="formatQty(item)"></td>
+                                                <td class="px-3 py-2 text-right text-stone-600 dark:text-stone-400 whitespace-nowrap" x-text="formatPrice(item.unit_price_snapshot)"></td>
+                                                <td class="px-3 py-2 text-right font-semibold text-stone-900 dark:text-stone-100 whitespace-nowrap" x-text="formatPrice(item.line_total)"></td>
                                             </tr>
                                         </template>
                                     </tbody>
@@ -637,16 +637,16 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
 
                         <!-- Supplier Status Transition Controls -->
                         <template x-if="allowedNextStatuses(activeOrder.status).length > 0">
-                            <div class="rounded-xl border border-stone-200 bg-stone-50 p-3.5 sm:p-4 space-y-3">
-                                <h4 class="text-xs font-semibold uppercase tracking-wider text-stone-700">Update Order Status (Notifies Customer via Email)</h4>
+                            <div class="rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/70 p-3.5 sm:p-4 space-y-3">
+                                <h4 class="text-xs font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300">Update Order Status (Notifies Customer via Email)</h4>
                                 <div>
-                                    <label for="supplier-status-note" class="block text-xs text-stone-600 mb-1">Optional Supplier Note</label>
+                                    <label for="supplier-status-note" class="block text-xs text-stone-600 dark:text-stone-400 mb-1">Optional Supplier Note</label>
                                     <textarea
                                         id="supplier-status-note"
                                         rows="2"
                                         x-model="statusNote"
                                         placeholder="e.g. Dispatched with morning delivery van, or reason if declined..."
-                                        class="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-base sm:text-xs text-stone-900 outline-none focus:border-emerald-500"
+                                        class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-2 text-base sm:text-xs text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 outline-none focus:border-emerald-500"
                                     ></textarea>
                                 </div>
                                 <div class="grid grid-cols-1 sm:flex sm:flex-wrap gap-2">
@@ -667,16 +667,16 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                         <!-- Status Timeline -->
                         <template x-if="activeOrder.status_history && activeOrder.status_history.length > 0">
                             <div>
-                                <h4 class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">Audit Timeline</h4>
+                                <h4 class="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2">Audit Timeline</h4>
                                 <ul class="space-y-2 text-xs">
                                     <template x-for="entry in activeOrder.status_history" :key="entry.id">
-                                        <li class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-3 rounded-lg bg-stone-50 border border-stone-200 px-3 py-2">
+                                        <li class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-3 rounded-lg bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-700 px-3 py-2">
                                             <div>
-                                                <span class="font-semibold text-stone-900" x-text="statusLabel(entry.new_status)"></span>
-                                                <span class="text-stone-500" x-show="entry.changed_by_name" x-text="' by ' + entry.changed_by_name"></span>
-                                                <span class="text-stone-500" x-show="entry.note" x-text="' — ' + entry.note"></span>
+                                                <span class="font-semibold text-stone-900 dark:text-stone-100" x-text="statusLabel(entry.new_status)"></span>
+                                                <span class="text-stone-500 dark:text-stone-400" x-show="entry.changed_by_name" x-text="' by ' + entry.changed_by_name"></span>
+                                                <span class="text-stone-500 dark:text-stone-400" x-show="entry.note" x-text="' — ' + entry.note"></span>
                                             </div>
-                                            <span class="text-stone-400 shrink-0" x-text="entry.changed_at"></span>
+                                            <span class="text-stone-400 dark:text-stone-500 shrink-0" x-text="entry.changed_at"></span>
                                         </li>
                                     </template>
                                 </ul>
@@ -686,11 +686,11 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                 </template>
             </div>
 
-            <div class="px-4 sm:px-6 py-3.5 border-t border-stone-200 bg-stone-50 flex justify-end shrink-0">
+            <div class="px-4 sm:px-6 py-3.5 border-t border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950/60 flex justify-end shrink-0">
                 <button
                     type="button"
                     @click="closeOrderModal()"
-                    class="w-full sm:w-auto rounded-lg border border-stone-300 bg-white hover:bg-stone-100 text-stone-700 px-4 py-2.5 sm:py-2 text-xs font-semibold cursor-pointer"
+                    class="w-full sm:w-auto rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 px-4 py-2.5 sm:py-2 text-xs font-semibold cursor-pointer"
                 >
                     Close
                 </button>
@@ -702,72 +702,72 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
     <div
         x-show="productModalOpen"
         x-cloak
-        class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-stone-900/60"
+        class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-stone-900/60 dark:bg-black/75"
         @keydown.escape.window="closeProductModal()"
     >
         <div
             @click.away="closeProductModal()"
-            class="bg-white rounded-2xl shadow-xl border border-stone-200 max-w-lg w-full max-h-[92dvh] sm:max-h-[90vh] flex flex-col overflow-hidden"
+            class="bg-white dark:bg-stone-900 rounded-2xl shadow-xl border border-stone-200 dark:border-stone-800 max-w-lg w-full max-h-[92dvh] sm:max-h-[90vh] flex flex-col overflow-hidden"
         >
-            <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-stone-200 flex items-center justify-between bg-stone-50 shrink-0">
-                <h3 class="text-base font-bold text-stone-900" x-text="productForm.id ? 'Edit Product' : 'Add New Product'"></h3>
+            <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between bg-stone-50 dark:bg-stone-950/60 shrink-0">
+                <h3 class="text-base font-bold text-stone-900 dark:text-stone-100" x-text="productForm.id ? 'Edit Product' : 'Add New Product'"></h3>
                 <button
                     type="button"
                     @click="closeProductModal()"
-                    class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 text-xl leading-none cursor-pointer"
+                    class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-800 text-xl leading-none cursor-pointer"
                     aria-label="Close modal"
                 >&times;</button>
             </div>
 
             <form @submit.prevent="saveProduct()" class="p-4 sm:p-6 overflow-y-auto space-y-4">
                 <div>
-                    <label for="prod-description" class="block text-xs font-semibold text-stone-700 mb-1">Product Description *</label>
+                    <label for="prod-description" class="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">Product Description *</label>
                     <input
                         id="prod-description"
                         type="text"
                         required
                         x-model="productForm.description"
                         placeholder="e.g. Oyster Mushrooms (Fresh)"
-                        class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 outline-none focus:border-emerald-500"
+                        class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 outline-none focus:border-emerald-500"
                     >
-                    <p x-show="productFormErrors.description" x-text="productFormErrors.description" class="text-xs text-red-600 mt-1"></p>
+                    <p x-show="productFormErrors.description" x-text="productFormErrors.description" class="text-xs text-red-600 dark:text-red-400 mt-1"></p>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label for="prod-category" class="block text-xs font-semibold text-stone-700 mb-1">Category *</label>
+                        <label for="prod-category" class="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">Category *</label>
                         <select
                             id="prod-category"
                             required
                             x-model="productForm.category_id"
-                            class="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-emerald-500"
+                            class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:border-emerald-500"
                         >
                             <template x-for="cat in categories" :key="cat.id">
                                 <option :value="String(cat.id)" x-text="cat.name"></option>
                             </template>
                         </select>
-                        <p x-show="productFormErrors.category_id" x-text="productFormErrors.category_id" class="text-xs text-red-600 mt-1"></p>
+                        <p x-show="productFormErrors.category_id" x-text="productFormErrors.category_id" class="text-xs text-red-600 dark:text-red-400 mt-1"></p>
                     </div>
 
                     <div>
-                        <label for="prod-unit" class="block text-xs font-semibold text-stone-700 mb-1">Unit *</label>
+                        <label for="prod-unit" class="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">Unit *</label>
                         <select
                             id="prod-unit"
                             required
                             x-model="productForm.unit_id"
-                            class="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-emerald-500"
+                            class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:border-emerald-500"
                         >
                             <template x-for="u in units" :key="u.id">
                                 <option :value="String(u.id)" x-text="u.name + (u.allow_decimal ? ' (0.1 steps)' : ' (whole)')"></option>
                             </template>
                         </select>
-                        <p x-show="productFormErrors.unit_id" x-text="productFormErrors.unit_id" class="text-xs text-red-600 mt-1"></p>
+                        <p x-show="productFormErrors.unit_id" x-text="productFormErrors.unit_id" class="text-xs text-red-600 dark:text-red-400 mt-1"></p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label for="prod-price" class="block text-xs font-semibold text-stone-700 mb-1">Unit Price (ZAR) *</label>
+                        <label for="prod-price" class="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">Unit Price (ZAR) *</label>
                         <input
                             id="prod-price"
                             type="number"
@@ -775,13 +775,13 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                             min="0"
                             required
                             x-model="productForm.unit_price"
-                            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 outline-none focus:border-emerald-500"
+                            class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:border-emerald-500"
                         >
-                        <p x-show="productFormErrors.unit_price" x-text="productFormErrors.unit_price" class="text-xs text-red-600 mt-1"></p>
+                        <p x-show="productFormErrors.unit_price" x-text="productFormErrors.unit_price" class="text-xs text-red-600 dark:text-red-400 mt-1"></p>
                     </div>
 
                     <div>
-                        <label for="prod-stock" class="block text-xs font-semibold text-stone-700 mb-1">Stock Quantity *</label>
+                        <label for="prod-stock" class="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">Stock Quantity *</label>
                         <input
                             id="prod-stock"
                             type="number"
@@ -789,59 +789,59 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                             min="0"
                             required
                             x-model="productForm.stock_quantity"
-                            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 outline-none focus:border-emerald-500"
+                            class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:border-emerald-500"
                         >
-                        <p x-show="productFormErrors.stock_quantity" x-text="productFormErrors.stock_quantity" class="text-xs text-red-600 mt-1"></p>
+                        <p x-show="productFormErrors.stock_quantity" x-text="productFormErrors.stock_quantity" class="text-xs text-red-600 dark:text-red-400 mt-1"></p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label for="prod-sku" class="block text-xs font-semibold text-stone-700 mb-1">SKU (auto-generated if blank)</label>
+                        <label for="prod-sku" class="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">SKU (auto-generated if blank)</label>
                         <input
                             id="prod-sku"
                             type="text"
                             x-model="productForm.sku"
                             placeholder="e.g. MUSH-OYSTER-01"
-                            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm font-mono text-stone-900 outline-none focus:border-emerald-500"
+                            class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 px-3 py-2 text-sm font-mono text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 outline-none focus:border-emerald-500"
                         >
-                        <p x-show="productFormErrors.sku" x-text="productFormErrors.sku" class="text-xs text-red-600 mt-1"></p>
+                        <p x-show="productFormErrors.sku" x-text="productFormErrors.sku" class="text-xs text-red-600 dark:text-red-400 mt-1"></p>
                     </div>
 
                     <div>
-                        <label for="prod-image" class="block text-xs font-semibold text-stone-700 mb-1">Image Path (optional)</label>
+                        <label for="prod-image" class="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">Image Path (optional)</label>
                         <input
                             id="prod-image"
                             type="text"
                             x-model="productForm.image_path"
                             placeholder="assets/images/products/..."
-                            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 outline-none focus:border-emerald-500"
+                            class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 outline-none focus:border-emerald-500"
                         >
-                        <p x-show="productFormErrors.image_path" x-text="productFormErrors.image_path" class="text-xs text-red-600 mt-1"></p>
+                        <p x-show="productFormErrors.image_path" x-text="productFormErrors.image_path" class="text-xs text-red-600 dark:text-red-400 mt-1"></p>
                     </div>
                 </div>
 
-                <label class="inline-flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
+                <label class="inline-flex items-center gap-2 text-sm text-stone-700 dark:text-stone-300 cursor-pointer">
                     <input
                         type="checkbox"
                         x-model="productForm.is_active"
-                        class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500"
+                        class="rounded border-stone-300 dark:border-stone-600 text-emerald-600 focus:ring-emerald-500"
                     >
                     <span>Active &amp; visible on customer storefront</span>
                 </label>
 
-                <div class="pt-3 border-t border-stone-200 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2">
+                <div class="pt-3 border-t border-stone-200 dark:border-stone-800 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2">
                     <button
                         type="button"
                         @click="closeProductModal()"
-                        class="w-full sm:w-auto rounded-lg border border-stone-300 bg-white hover:bg-stone-100 text-stone-700 px-4 py-2.5 sm:py-2 text-xs font-semibold cursor-pointer"
+                        class="w-full sm:w-auto rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 px-4 py-2.5 sm:py-2 text-xs font-semibold cursor-pointer"
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
                         :disabled="savingProduct"
-                        class="w-full sm:w-auto rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white px-5 py-2.5 sm:py-2 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
+                        class="w-full sm:w-auto rounded-lg bg-emerald-700 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white px-5 py-2.5 sm:py-2 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
                         x-text="savingProduct ? 'Saving...' : (productForm.id ? 'Update Product' : 'Create Product')"
                     ></button>
                 </div>

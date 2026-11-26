@@ -1,5 +1,20 @@
 export type UserRole = 'customer' | 'company' | 'supplier';
 
+export type BuiltinThemeMode = 'light' | 'dark' | 'system';
+
+export type ThemeModeId = BuiltinThemeMode | (string & {});
+
+export type ColorScheme = 'light' | 'dark';
+
+export interface ThemeDefinition {
+  id: ThemeModeId;
+  label: string;
+  shortLabel: string;
+  description: string;
+  colorScheme: ColorScheme | 'system';
+  icon: 'sun' | 'moon' | 'monitor' | 'palette';
+}
+
 export type OrderStatus =
   | 'pending'
   | 'received'

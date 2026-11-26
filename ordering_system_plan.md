@@ -60,7 +60,7 @@ ordering-system/
 │   ├── css/                       # Tailwind CSS source (app.css)
 │   └── ts/                        # Strict TypeScript for modular Alpine.js
 │       ├── types/                 # Shared TS interfaces (Product, CartItem, Order, User, ApiResponse)
-│       ├── shared/                # Global layout modules (api.ts, cartStore.ts, authStore.ts, toast.ts)
+│       ├── shared/                # Global layout modules (api.ts, cartStore.ts, authStore.ts, toast.ts, themeStore.ts)
 │       └── pages/                 # Page modules (storefront.ts, customerDashboard.ts, supplierDashboard.ts)
 ├── config/                        # settings.php, container.php (PHP-DI), middleware.php, routes.php
 ├── src/
@@ -102,7 +102,7 @@ ordering-system/
 ## 4. Frontend Architecture (`slim/php-view` + Tailwind + TypeScript/Alpine.js)
 
 - **Templating & Routing:** Official `slim/php-view` with a shared `templates/layouts/base.php` layout and Apache `.htaccess` rewrite rules.
-- **Modular TypeScript + Alpine.js:** Shared modules (`api.ts` using native Fetch API only with `credentials: 'same-origin'`, `authStore.ts`, `cartStore.ts`, `toast.ts`) compiled and linked globally in `layouts/base.php`; page modules linked in individual templates.
+- **Modular TypeScript + Alpine.js:** Shared modules (`api.ts` using native Fetch API only with `credentials: 'same-origin'`, `authStore.ts`, `cartStore.ts`, `toast.ts`, `themeStore.ts`) compiled and linked globally in `layouts/base.php`; page modules linked in individual templates.
 - **Welcome Storefront (`/`):** Category tabs, live search, product cards with generated photos, ZAR pricing, `0.1 kg` / `1 Unit` controls, and reactive cart drawer.
 - **Customer Dashboard (`/dashboard`):** Date-range & order-number filters, Total Spend across selected order invoices, order status tracking, and PDF statement export (*Complete / Delivered & Declined*).
 - **Supplier Dashboard (`/supplier` & `/supplier/inventory`):** Company cards (total orders, email, phone, location, View More Details), order status transitions, and full admin product CRUD (add, edit & update products, ZAR pricing, stock & active visibility).
@@ -118,6 +118,7 @@ ordering-system/
 5. **Phase 5 — Customer Dashboard & PDF Statements:** Date-range/order-number filtering, total spend across selected invoices, and Dompdf statement generation.
 6. **Phase 6 — Supplier Dashboard, Product Management, Order Lifecycle & Emails:** Company cards, status transitions, full supplier product CRUD (add, edit, update products & ZAR pricing), SMTP alerts/updates, and end-to-end verification.
 7. **Phase 7 — Mobile-First Responsive UI Across All Devices:** Full mobile & tablet responsiveness across every template and interactive flow — collapsible sticky mobile navigation drawer with always-accessible cart trigger, mobile-safe toast positioning, horizontally scrollable category filter pills, dynamic-viewport (`100dvh`) slide-over cart drawer with safe-area padding, mobile card views alongside desktop tables for Customer Invoices, Supplier Company Orders, and Supplier Inventory, touch-friendly controls, responsive filter grids, and overflow-safe modals across Storefront, Auth, Customer Dashboard, and Supplier Portal.
+8. **Phase 8 — Extensible Dark Mode & Safe Light Mode:** Implement full dark mode support across every template, modal, drawer, table, badge, form control, and toast while preserving light mode as a safe, regression-free default. Built on an extensible theme registry (`themeStore.ts`), `data-theme` / `.dark` attribute switching with Tailwind v4 `@custom-variant dark` and semantic CSS tokens, zero-FOUC inline initialization, `localStorage` persistence with cross-tab sync, live `prefers-color-scheme` (`system`) tracking, and accessible desktop & mobile theme switchers designed so additional color modes can be registered cleanly without refactoring UI plumbing.
 
 ### Mandatory Release Gate After Every Phase
 
