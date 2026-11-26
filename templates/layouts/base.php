@@ -31,7 +31,7 @@ $base = $basePath ?? '';
     >
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
             <a href="<?= htmlspecialchars($base . '/', ENT_QUOTES, 'UTF-8') ?>" class="font-semibold text-base sm:text-lg tracking-tight truncate">
-                <?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?>
+                Fresh Produce
             </a>
 
             <!-- Desktop Navigation -->

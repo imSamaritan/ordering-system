@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     'app' => [
-        'name' => $_ENV['APP_NAME'] ?? 'Produce & Inventory Ordering System',
+        'name' => $_ENV['APP_NAME'] ?? 'Fresh Produce',
         'env' => $_ENV['APP_ENV'] ?? 'local',
         'debug' => filter_var($_ENV['APP_DEBUG'] ?? 'true', FILTER_VALIDATE_BOOLEAN),
         'url' => rtrim((string) ($_ENV['APP_URL'] ?? 'http://localhost/projects/ordering-system'), '/'),
