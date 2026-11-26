@@ -87,6 +87,7 @@ export function createCartStore(): CartStore {
         existing.quantityTenths = nextTenths;
         existing.unitPrice = product.unit_price;
         existing.maxStock = product.stock_quantity;
+        existing.imagePath = product.image_path;
       } else {
         this.items.push({
           productId: product.id,
