@@ -86,6 +86,7 @@ export function createCartStore(): CartStore {
       if (existing) {
         existing.quantityTenths = nextTenths;
         existing.unitPrice = product.unit_price;
+        existing.maxStock = product.stock_quantity;
       } else {
         this.items.push({
           productId: product.id,
@@ -97,6 +98,7 @@ export function createCartStore(): CartStore {
           unitPrice: product.unit_price,
           quantityTenths: stepTenths,
           imagePath: product.image_path,
+          maxStock: product.stock_quantity,
         });
       }
       this.persist();
@@ -110,7 +112,8 @@ export function createCartStore(): CartStore {
       }
       const stepTenths = existing.allowDecimal ? 1 : 10;
       const nextTenths = existing.quantityTenths + stepTenths;
-      if (maxStock !== undefined && nextTenths > Math.round(maxStock * 10)) {
+      const resolvedMaxStock = maxStock ?? existing.maxStock;
+      if (resolvedMaxStock !== undefined && nextTenths > Math.round(resolvedMaxStock * 10)) {
         return false;
       }
       existing.quantityTenths = nextTenths;

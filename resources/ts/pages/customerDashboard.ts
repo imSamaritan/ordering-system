@@ -74,6 +74,9 @@ export function customerDashboardPage(): CustomerDashboardComponent {
     activeOrder: null,
 
     async init(): Promise<void> {
+      window.addEventListener('order:placed', () => {
+        void this.loadOrders();
+      });
       await this.loadOrders();
     },
 
