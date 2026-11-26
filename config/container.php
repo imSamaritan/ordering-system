@@ -3,12 +3,17 @@
 declare(strict_types=1);
 
 use App\Controllers\AuthController;
+use App\Controllers\CatalogController;
+use App\Controllers\OrderController;
 use App\Middleware\JwtCookieAuthMiddleware;
 use App\Repositories\EmailLogRepository;
 use App\Repositories\EmailVerificationRepository;
+use App\Repositories\OrderRepository;
+use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use App\Services\AuthService;
 use App\Services\EmailService;
+use App\Services\OrderService;
 use App\Services\VerificationService;
 use App\Support\ViewRenderer;
 use Dibi\Connection;
@@ -121,5 +126,36 @@ return [
         $c->get(AuthService::class),
         $c->get(VerificationService::class),
         $c->get(PhpRenderer::class)
+    ),
+
+    ProductRepository::class => static fn (ContainerInterface $c): ProductRepository => new ProductRepository(
+        $c->get(Connection::class)
+    ),
+
+    OrderRepository::class => static fn (ContainerInterface $c): OrderRepository => new OrderRepository(
+        $c->get(Connection::class)
+    ),
+
+    OrderService::class => static function (ContainerInterface $container): OrderService {
+        /** @var array<string, mixed> $settings */
+        $settings = $container->get('settings');
+
+        return new OrderService(
+            $container->get(Connection::class),
+            $container->get(ProductRepository::class),
+            $container->get(OrderRepository::class),
+            $container->get(EmailService::class),
+            (string) ($settings['supplier']['email'] ?? 'supplier@freshproduce.co.za'),
+            (string) ($settings['app']['currency_symbol'] ?? 'R'),
+            (string) ($settings['app']['name'] ?? 'Produce & Inventory Ordering System')
+        );
+    },
+
+    CatalogController::class => static fn (ContainerInterface $c): CatalogController => new CatalogController(
+        $c->get(ProductRepository::class)
+    ),
+
+    OrderController::class => static fn (ContainerInterface $c): OrderController => new OrderController(
+        $c->get(OrderService::class)
     ),
 ];

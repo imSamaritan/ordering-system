@@ -2,17 +2,28 @@ import type { CartItem, Product } from '../types/index.js';
 
 const STORAGE_KEY = 'ordering_system_cart_v1';
 
+export interface CartOrderItemPayload {
+  product_id: number;
+  quantity: number;
+}
+
 export interface CartStore {
   items: CartItem[];
   isOpen: boolean;
   init(): void;
   persist(): void;
-  increment(product: Product): void;
+  open(): void;
+  close(): void;
+  toggle(): void;
+  increment(product: Product): boolean;
+  incrementById(productId: number, maxStock?: number): boolean;
   decrement(productId: number): void;
   remove(productId: number): void;
   clear(): void;
   quantityOf(productId: number): number;
+  formatQuantity(quantity: number, allowDecimal: boolean): string;
   lineTotal(item: CartItem): number;
+  toOrderItems(): CartOrderItemPayload[];
   get totalItems(): number;
   get subtotal(): number;
 }
@@ -28,7 +39,13 @@ export function createCartStore(): CartStore {
         if (raw) {
           const parsed = JSON.parse(raw) as unknown;
           if (Array.isArray(parsed)) {
-            this.items = parsed as CartItem[];
+            this.items = (parsed as CartItem[]).filter(
+              (item) =>
+                item &&
+                typeof item.productId === 'number' &&
+                typeof item.quantityTenths === 'number' &&
+                item.quantityTenths > 0
+            );
           }
         }
       } catch {
@@ -44,11 +61,31 @@ export function createCartStore(): CartStore {
       }
     },
 
-    increment(product: Product): void {
+    open(): void {
+      this.isOpen = true;
+    },
+
+    close(): void {
+      this.isOpen = false;
+    },
+
+    toggle(): void {
+      this.isOpen = !this.isOpen;
+    },
+
+    increment(product: Product): boolean {
       const stepTenths = product.allow_decimal ? 1 : 10;
+      const maxTenths = Math.round(product.stock_quantity * 10);
       const existing = this.items.find((i) => i.productId === product.id);
+      const nextTenths = (existing?.quantityTenths ?? 0) + stepTenths;
+
+      if (nextTenths > maxTenths) {
+        return false;
+      }
+
       if (existing) {
-        existing.quantityTenths += stepTenths;
+        existing.quantityTenths = nextTenths;
+        existing.unitPrice = product.unit_price;
       } else {
         this.items.push({
           productId: product.id,
@@ -63,6 +100,22 @@ export function createCartStore(): CartStore {
         });
       }
       this.persist();
+      return true;
+    },
+
+    incrementById(productId: number, maxStock?: number): boolean {
+      const existing = this.items.find((i) => i.productId === productId);
+      if (!existing) {
+        return false;
+      }
+      const stepTenths = existing.allowDecimal ? 1 : 10;
+      const nextTenths = existing.quantityTenths + stepTenths;
+      if (maxStock !== undefined && nextTenths > Math.round(maxStock * 10)) {
+        return false;
+      }
+      existing.quantityTenths = nextTenths;
+      this.persist();
+      return true;
     },
 
     decrement(productId: number): void {
@@ -97,8 +150,19 @@ export function createCartStore(): CartStore {
       return item ? item.quantityTenths / 10 : 0;
     },
 
+    formatQuantity(quantity: number, allowDecimal: boolean): string {
+      return allowDecimal ? quantity.toFixed(1) : String(Math.round(quantity));
+    },
+
     lineTotal(item: CartItem): number {
       return Math.round(item.unitPrice * item.quantityTenths * 10) / 100;
+    },
+
+    toOrderItems(): CartOrderItemPayload[] {
+      return this.items.map((item) => ({
+        product_id: item.productId,
+        quantity: item.quantityTenths / 10,
+      }));
     },
 
     get totalItems(): number {
