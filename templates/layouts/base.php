@@ -11,6 +11,13 @@
 $pageTitle = isset($title) && $title !== '' ? "{$title} | {$appName}" : $appName;
 $assetBase = ($basePath ?? '') . '/assets';
 $base = $basePath ?? '';
+$publicAssetsDir = dirname(__DIR__, 2) . '/public/assets';
+$versionedAsset = static function (string $relativePath) use ($assetBase, $publicAssetsDir): string {
+    $clean = ltrim($relativePath, '/');
+    $fullPath = $publicAssetsDir . '/' . $clean;
+    $ver = is_file($fullPath) ? (string) filemtime($fullPath) : '';
+    return $assetBase . '/' . $clean . ($ver !== '' ? '?v=' . $ver : '');
+};
 ?>
 <!DOCTYPE html>
 <html lang="en" data-theme="light" data-theme-preference="light">
@@ -42,7 +49,7 @@ $base = $basePath ?? '';
             }
         })();
     </script>
-    <link rel="stylesheet" href="<?= htmlspecialchars($assetBase . '/css/app.css', ENT_QUOTES, 'UTF-8') ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars($versionedAsset('css/app.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 <body class="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100 antialiased flex flex-col overflow-x-hidden transition-colors duration-200">
     <header
@@ -510,9 +517,9 @@ $base = $basePath ?? '';
         &copy; <?= date('Y') ?> <?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?> &middot; Currency: <?= htmlspecialchars($currency ?? 'ZAR', ENT_QUOTES, 'UTF-8') ?> (<?= htmlspecialchars($currencySymbol ?? 'R', ENT_QUOTES, 'UTF-8') ?>)
     </footer>
 
-    <script type="module" src="<?= htmlspecialchars($assetBase . '/js/shared/index.js', ENT_QUOTES, 'UTF-8') ?>"></script>
+    <script type="module" src="<?= htmlspecialchars($versionedAsset('js/shared/index.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
     <?php if (!empty($pageScript)): ?>
-        <script type="module" src="<?= htmlspecialchars($assetBase . '/js/' . ltrim($pageScript, '/'), ENT_QUOTES, 'UTF-8') ?>"></script>
+        <script type="module" src="<?= htmlspecialchars($versionedAsset('js/' . ltrim($pageScript, '/')), ENT_QUOTES, 'UTF-8') ?>"></script>
     <?php endif; ?>
 </body>
 </html>
