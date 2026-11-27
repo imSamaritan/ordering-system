@@ -104,5 +104,5 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 2. Visit `https://yourdomain.co.za/` — storefront loads with all 98 products and images.
 3. Verify `https://yourdomain.co.za/.env` returns **403 Forbidden** or **404 Not Found**.
 4. Sign in to `/login` as supplier (`supplier@freshproduce.co.za`) and **change the default password** via the password reset flow or database.
-5. Test registering a customer account and confirm the verification email arrives from `no-reply@imsamaritan.co.za`.
+5. Test registering a customer account and confirm the verification email arrives from `no-reply@asamaritan-order-management-sys.co.za`.
 6. Test placing an order and downloading a PDF statement from `/dashboard`.

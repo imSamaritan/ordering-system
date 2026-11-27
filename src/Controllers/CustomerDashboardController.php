@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Repositories\OrderRepository;
+use App\Repositories\ProductRepository;
 use App\Support\ResponseHelper;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -22,6 +23,7 @@ final class CustomerDashboardController
 
     public function __construct(
         private readonly OrderRepository $orderRepository,
+        private readonly ProductRepository $productRepository,
         private readonly PhpRenderer $view
     ) {
     }
@@ -160,6 +162,166 @@ final class CustomerDashboardController
 
         return ResponseHelper::json($response, [
             'order' => $order,
+        ]);
+    }
+
+    /**
+     * Validates historical line items from a past order against live catalog availability,
+     * stock levels, and current pricing so the customer can reorder in one click.
+     *
+     * @param array<string, string> $args
+     */
+    public function reorderPreview(Request $request, Response $response, array $args): Response
+    {
+        /** @var array<string, mixed>|null $authUser */
+        $authUser = $request->getAttribute('auth_user');
+        if ($authUser === null) {
+            return ResponseHelper::error($response, 'Authentication required.', 401);
+        }
+
+        $orderId = (int) ($args['id'] ?? 0);
+        if ($orderId <= 0) {
+            return ResponseHelper::error($response, 'Invalid order ID.', 400);
+        }
+
+        $order = $this->orderRepository->findCustomerOrderDetail((int) $authUser['id'], $orderId);
+        if ($order === null) {
+            return ResponseHelper::error($response, 'Order not found.', 404);
+        }
+
+        /** @var list<array<string, mixed>> $orderItems */
+        $orderItems = is_array($order['items'] ?? null) ? $order['items'] : [];
+        $productIds = [];
+        foreach ($orderItems as $item) {
+            $productIds[] = (int) $item['product_id'];
+        }
+
+        $liveProducts = $this->productRepository->findByIds($productIds);
+
+        $available = [];
+        $adjusted = [];
+        $unavailable = [];
+        $priceChangedCount = 0;
+
+        foreach ($orderItems as $item) {
+            $productId = (int) $item['product_id'];
+            $orderedQty = round((float) $item['quantity'], 2);
+            $previousPrice = round((float) $item['unit_price_snapshot'], 2);
+            $product = $liveProducts[$productId] ?? null;
+
+            if ($product === null) {
+                $unavailable[] = [
+                    'product_id' => $productId,
+                    'description' => (string) $item['product_name_snapshot'],
+                    'unit_name' => (string) $item['unit_name_snapshot'],
+                    'ordered_quantity' => $orderedQty,
+                    'previous_unit_price' => $previousPrice,
+                    'reason' => 'Product is no longer available in the catalog.',
+                ];
+                continue;
+            }
+
+            if (!(bool) $product['is_active']) {
+                $unavailable[] = [
+                    'product_id' => $productId,
+                    'description' => (string) $product['description'],
+                    'unit_name' => (string) $product['unit_name'],
+                    'ordered_quantity' => $orderedQty,
+                    'previous_unit_price' => $previousPrice,
+                    'reason' => 'Product is currently inactive.',
+                ];
+                continue;
+            }
+
+            $allowDecimal = (bool) $product['allow_decimal'];
+            $stepSize = (float) ($product['step_size'] ?? ($allowDecimal ? 0.1 : 1.0));
+            $stepTenths = $allowDecimal ? 1 : 10;
+
+            $requestedTenths = (int) round($orderedQty * 10);
+            if (!$allowDecimal) {
+                $requestedTenths = max(10, (int) round($requestedTenths / 10) * 10);
+            } elseif ($requestedTenths < 1) {
+                $requestedTenths = 1;
+            }
+
+            $stockQty = round((float) $product['stock_quantity'], 2);
+            $stockTenths = (int) floor(round($stockQty * 10, 4));
+            $maxOrderableTenths = $allowDecimal
+                ? $stockTenths
+                : intdiv(max(0, $stockTenths), 10) * 10;
+
+            if ($maxOrderableTenths < $stepTenths) {
+                $unavailable[] = [
+                    'product_id' => $productId,
+                    'description' => (string) $product['description'],
+                    'unit_name' => (string) $product['unit_name'],
+                    'ordered_quantity' => $orderedQty,
+                    'previous_unit_price' => $previousPrice,
+                    'reason' => 'Currently out of stock.',
+                ];
+                continue;
+            }
+
+            $currentPrice = round((float) $product['unit_price'], 2);
+            $priceDelta = round($currentPrice - $previousPrice, 2);
+            $priceChanged = abs($priceDelta) >= 0.01;
+            if ($priceChanged) {
+                $priceChangedCount++;
+            }
+
+            $entry = [
+                'product_id' => $productId,
+                'sku' => (string) $product['sku'],
+                'description' => (string) $product['description'],
+                'unit_name' => (string) $product['unit_name'],
+                'allow_decimal' => $allowDecimal,
+                'step_size' => $stepSize,
+                'image_path' => $product['image_path'],
+                'unit_price' => $currentPrice,
+                'previous_unit_price' => $previousPrice,
+                'price_changed' => $priceChanged,
+                'price_delta' => $priceDelta,
+                'stock_quantity' => $stockQty,
+                'ordered_quantity' => $orderedQty,
+            ];
+
+            if ($requestedTenths <= $maxOrderableTenths) {
+                $entry['suggested_quantity'] = round($requestedTenths / 10, 2);
+                $available[] = $entry;
+            } else {
+                $suggestedQty = round($maxOrderableTenths / 10, 2);
+                $formattedSuggested = $allowDecimal
+                    ? number_format($suggestedQty, 1, '.', '')
+                    : (string) (int) round($suggestedQty);
+                $formattedOrdered = $allowDecimal
+                    ? number_format($orderedQty, 1, '.', '')
+                    : (string) (int) round($orderedQty);
+
+                $entry['suggested_quantity'] = $suggestedQty;
+                $entry['reason'] = sprintf(
+                    'Only %s %s in stock (ordered %s).',
+                    $formattedSuggested,
+                    (string) $product['unit_name'],
+                    $formattedOrdered
+                );
+                $adjusted[] = $entry;
+            }
+        }
+
+        return ResponseHelper::json($response, [
+            'order_id' => (int) $order['id'],
+            'order_number' => (string) $order['order_number'],
+            'available' => $available,
+            'adjusted' => $adjusted,
+            'unavailable' => $unavailable,
+            'summary' => [
+                'total_items' => count($orderItems),
+                'available_count' => count($available),
+                'adjusted_count' => count($adjusted),
+                'unavailable_count' => count($unavailable),
+                'price_changed_count' => $priceChangedCount,
+                'can_reorder' => (count($available) + count($adjusted)) > 0,
+            ],
         ]);
     }
 

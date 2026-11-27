@@ -72,6 +72,7 @@ final class PasswordResetService
   <p style="margin: 24px 0;">
     <a href="{$safeUrl}" style="background-color: #047857; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Reset Password</a>
   </p>
+  <p style="font-size: 13px; color: #57534e;">If the button does not work, copy and paste this link into your browser:<br><a href="{$safeUrl}" style="color: #047857; word-break: break-all;">{$safeUrl}</a></p>
   <p style="font-size: 13px; color: #57534e;">This link expires in {$ttl} minutes. If you did not request a password reset, you can safely ignore this email.</p>
 </div>
 HTML;

@@ -167,7 +167,11 @@ function registerAuthComponents(): void {
           this.debugVerifyUrl = res.data.debug_verify_url;
         }
         const toast = Alpine.store('toast') as ToastStore;
-        toast.push('Account created! Please verify your email.', 'success');
+        if (res.data.email_sent === false) {
+          toast.push('Account created, but the verification email could not be sent right now.', 'error');
+        } else {
+          toast.push('Account created! Please verify your email.', 'success');
+        }
       } catch {
         this.error = 'Network error. Please try again.';
       } finally {

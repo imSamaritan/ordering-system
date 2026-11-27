@@ -17,6 +17,7 @@ export interface CartStore {
   toggle(): void;
   increment(product: Product): boolean;
   incrementById(productId: number, maxStock?: number): boolean;
+  addBulkItems(items: CartItem[], mode: 'merge' | 'replace'): void;
   decrement(productId: number): void;
   remove(productId: number): void;
   clear(): void;
@@ -120,6 +121,65 @@ export function createCartStore(): CartStore {
       existing.quantityTenths = nextTenths;
       this.persist();
       return true;
+    },
+
+    addBulkItems(items: CartItem[], mode: 'merge' | 'replace'): void {
+      if (mode === 'replace') {
+        this.items = [];
+      }
+
+      for (const incoming of items) {
+        if (!incoming || incoming.quantityTenths <= 0) {
+          continue;
+        }
+
+        const stepTenths = incoming.allowDecimal ? 1 : 10;
+        let maxTenths: number | undefined;
+        if (incoming.maxStock !== undefined) {
+          const rawStockTenths = Math.floor(Math.round(incoming.maxStock * 10 * 100) / 100);
+          maxTenths = incoming.allowDecimal
+            ? rawStockTenths
+            : Math.floor(rawStockTenths / 10) * 10;
+        }
+
+        const normalizedIncomingTenths = incoming.allowDecimal
+          ? Math.max(1, Math.round(incoming.quantityTenths))
+          : Math.max(10, Math.round(incoming.quantityTenths / 10) * 10);
+
+        const existing = this.items.find((i) => i.productId === incoming.productId);
+        if (existing) {
+          let combinedTenths = existing.quantityTenths + normalizedIncomingTenths;
+          if (maxTenths !== undefined) {
+            combinedTenths = Math.min(combinedTenths, maxTenths);
+          }
+          if (combinedTenths >= stepTenths) {
+            existing.quantityTenths = combinedTenths;
+            existing.sku = incoming.sku;
+            existing.description = incoming.description;
+            existing.unitName = incoming.unitName;
+            existing.allowDecimal = incoming.allowDecimal;
+            existing.stepSize = incoming.stepSize;
+            existing.unitPrice = incoming.unitPrice;
+            existing.imagePath = incoming.imagePath;
+            if (incoming.maxStock !== undefined) {
+              existing.maxStock = incoming.maxStock;
+            }
+          }
+        } else {
+          let targetTenths = normalizedIncomingTenths;
+          if (maxTenths !== undefined) {
+            targetTenths = Math.min(targetTenths, maxTenths);
+          }
+          if (targetTenths >= stepTenths) {
+            this.items.push({
+              ...incoming,
+              quantityTenths: targetTenths,
+            });
+          }
+        }
+      }
+
+      this.persist();
     },
 
     decrement(productId: number): void {

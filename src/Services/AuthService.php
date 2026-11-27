@@ -86,10 +86,14 @@ final class AuthService
 
         $verification = $this->verificationService->createAndSendForUser($user);
 
+        $message = $verification['email_sent']
+            ? 'Account created. Please check your email to verify your address before signing in.'
+            : 'Account created, but we could not send the verification email right now. Please try resending the verification link shortly or contact support.';
+
         $result = [
             'ok' => true,
             'status' => 201,
-            'message' => 'Account created. Please check your email to verify your address before signing in.',
+            'message' => $message,
             'user' => UserRepository::toPublicArray($user),
             'email_sent' => $verification['email_sent'],
         ];
@@ -198,11 +202,20 @@ final class AuthService
 
         $verification = $this->verificationService->createAndSendForUser($user);
 
+        if (!$verification['email_sent']) {
+            return [
+                'ok' => false,
+                'status' => 503,
+                'message' => 'We could not send the verification email right now. Please try again in a moment.',
+                'email_sent' => false,
+            ];
+        }
+
         $result = [
             'ok' => true,
             'status' => 200,
             'message' => 'A fresh verification email has been sent. Please check your inbox.',
-            'email_sent' => $verification['email_sent'],
+            'email_sent' => true,
         ];
 
         if ($this->appDebug) {

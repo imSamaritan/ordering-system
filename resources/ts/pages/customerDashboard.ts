@@ -1,6 +1,15 @@
 import { apiRequest, formatCurrency, getBasePath } from '../shared/api.js';
+import type { CartStore } from '../shared/cartStore.js';
 import type { ToastStore } from '../shared/toast.js';
-import type { CustomerOrdersSummary, Order, OrderItem, OrderStatus } from '../types/index.js';
+import type {
+  CartItem,
+  CustomerOrdersSummary,
+  Order,
+  OrderItem,
+  OrderStatus,
+  ReorderPreviewItem,
+  ReorderPreviewPayload,
+} from '../types/index.js';
 
 interface CustomerOrdersPayload {
   orders: Order[];
@@ -37,6 +46,9 @@ export interface CustomerDashboardComponent {
   detailLoading: boolean;
   detailError: string;
   activeOrder: Order | null;
+  reorderingOrderId: number | null;
+  reorderChoiceModalOpen: boolean;
+  pendingReorderPreview: ReorderPreviewPayload | null;
   init(): Promise<void>;
   loadOrders(): Promise<void>;
   applyFilters(): Promise<void>;
@@ -50,6 +62,10 @@ export interface CustomerDashboardComponent {
   get activePipelineCount(): number;
   openOrderDetail(orderId: number): Promise<void>;
   closeOrderDetail(): void;
+  reorderOrder(orderId: number): Promise<void>;
+  confirmReorder(mode: 'merge' | 'replace'): void;
+  cancelReorderChoice(): void;
+  applyReorder(preview: ReorderPreviewPayload, mode: 'merge' | 'replace'): void;
   statementPdfUrl(mode: 'statement' | 'selected' | 'single', singleOrderId?: number): string;
   formatPrice(amount: number): string;
   formatQty(item: OrderItem): string;
@@ -72,6 +88,9 @@ export function customerDashboardPage(): CustomerDashboardComponent {
     detailLoading: false,
     detailError: '',
     activeOrder: null,
+    reorderingOrderId: null,
+    reorderChoiceModalOpen: false,
+    pendingReorderPreview: null,
 
     async init(): Promise<void> {
       window.addEventListener('order:placed', () => {
@@ -216,6 +235,110 @@ export function customerDashboardPage(): CustomerDashboardComponent {
       this.detailModalOpen = false;
       this.activeOrder = null;
       this.detailError = '';
+    },
+
+    async reorderOrder(orderId: number): Promise<void> {
+      if (this.reorderingOrderId !== null) {
+        return;
+      }
+
+      const toast = window.Alpine.store('toast') as ToastStore;
+      const cart = window.Alpine.store('cart') as CartStore;
+      this.reorderingOrderId = orderId;
+
+      try {
+        const res = await apiRequest<ReorderPreviewPayload>(`/customer/orders/${orderId}/reorder`);
+        if (!res.success || !res.data) {
+          toast.push(res.message ?? 'Could not validate items for reorder.', 'error');
+          return;
+        }
+
+        const preview = res.data;
+        if (!preview.summary.can_reorder) {
+          toast.push(
+            `None of the items from ${preview.order_number} are currently available to reorder.`,
+            'error'
+          );
+          return;
+        }
+
+        if (cart.totalItems > 0) {
+          this.pendingReorderPreview = preview;
+          this.reorderChoiceModalOpen = true;
+          return;
+        }
+
+        this.applyReorder(preview, 'replace');
+      } catch {
+        toast.push('Network error while preparing your reorder.', 'error');
+      } finally {
+        this.reorderingOrderId = null;
+      }
+    },
+
+    confirmReorder(mode: 'merge' | 'replace'): void {
+      if (!this.pendingReorderPreview) {
+        this.cancelReorderChoice();
+        return;
+      }
+      const preview = this.pendingReorderPreview;
+      this.reorderChoiceModalOpen = false;
+      this.pendingReorderPreview = null;
+      this.applyReorder(preview, mode);
+    },
+
+    cancelReorderChoice(): void {
+      this.reorderChoiceModalOpen = false;
+      this.pendingReorderPreview = null;
+    },
+
+    applyReorder(preview: ReorderPreviewPayload, mode: 'merge' | 'replace'): void {
+      const cart = window.Alpine.store('cart') as CartStore;
+      const toast = window.Alpine.store('toast') as ToastStore;
+
+      const toCartItem = (item: ReorderPreviewItem): CartItem => ({
+        productId: item.product_id,
+        sku: item.sku,
+        description: item.description,
+        unitName: item.unit_name || 'Unit',
+        allowDecimal: Boolean(item.allow_decimal),
+        stepSize: item.step_size || (item.allow_decimal ? 0.1 : 1),
+        unitPrice: item.unit_price,
+        quantityTenths: Math.round(item.suggested_quantity * 10),
+        imagePath: item.image_path,
+        maxStock: item.stock_quantity,
+      });
+
+      const reorderItems = [...preview.available, ...preview.adjusted].map(toCartItem);
+      cart.addBulkItems(reorderItems, mode);
+
+      const notes: string[] = [];
+      if (preview.summary.adjusted_count > 0) {
+        notes.push(`${preview.summary.adjusted_count} qty adjusted to stock`);
+      }
+      if (preview.summary.unavailable_count > 0) {
+        notes.push(`${preview.summary.unavailable_count} unavailable skipped`);
+      }
+      if (preview.summary.price_changed_count > 0) {
+        notes.push(`${preview.summary.price_changed_count} updated to current price`);
+      }
+
+      const verb = mode === 'merge' ? 'Merged' : 'Loaded';
+      const baseMsg = `${verb} ${reorderItems.length} item(s) from ${preview.order_number} into your cart.`;
+      const fullMsg = notes.length > 0 ? `${baseMsg} (${notes.join('; ')})` : baseMsg;
+      const toastType =
+        preview.summary.adjusted_count > 0 ||
+        preview.summary.unavailable_count > 0 ||
+        preview.summary.price_changed_count > 0
+          ? 'info'
+          : 'success';
+
+      toast.push(fullMsg, toastType);
+
+      if (this.detailModalOpen) {
+        this.closeOrderDetail();
+      }
+      cart.open();
     },
 
     statementPdfUrl(mode: 'statement' | 'selected' | 'single', singleOrderId?: number): string {

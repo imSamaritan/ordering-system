@@ -84,10 +84,11 @@ return [
     EmailService::class => static function (ContainerInterface $container): EmailService {
         /** @var array<string, mixed> $settings */
         $settings = $container->get('settings');
-        $dryRun = filter_var($_ENV['MAIL_DRY_RUN'] ?? 'false', FILTER_VALIDATE_BOOLEAN);
+        $smtp = (array) ($settings['smtp'] ?? []);
+        $dryRun = (bool) ($smtp['dry_run'] ?? false);
 
         return new EmailService(
-            $settings['smtp'],
+            $smtp,
             $container->get(EmailLogRepository::class),
             $dryRun
         );
@@ -199,6 +200,7 @@ return [
 
     CustomerDashboardController::class => static fn (ContainerInterface $c): CustomerDashboardController => new CustomerDashboardController(
         $c->get(OrderRepository::class),
+        $c->get(ProductRepository::class),
         $c->get(PhpRenderer::class)
     ),
 

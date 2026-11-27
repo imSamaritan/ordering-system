@@ -96,6 +96,52 @@ final class ProductRepository
     }
 
     /**
+     * Loads products by IDs without row-level locking (read-only).
+     *
+     * @param list<int> $productIds
+     * @return array<int, array<string, mixed>>
+     */
+    public function findByIds(array $productIds): array
+    {
+        $uniqueIds = array_values(array_unique(array_map('intval', $productIds)));
+        if ($uniqueIds === []) {
+            return [];
+        }
+
+        $rows = $this->db->query(
+            'SELECT
+                p.id,
+                p.category_id,
+                c.name AS category_name,
+                c.slug AS category_slug,
+                p.unit_id,
+                u.name AS unit_name,
+                u.allow_decimal,
+                u.step_size,
+                p.sku,
+                p.slug,
+                p.description,
+                p.image_path,
+                p.unit_price,
+                p.stock_quantity,
+                p.is_active
+             FROM products p
+             INNER JOIN categories c ON c.id = p.category_id
+             INNER JOIN units u ON u.id = p.unit_id
+             WHERE p.id IN %in',
+            $uniqueIds
+        )->fetchAll();
+
+        $map = [];
+        foreach ($rows as $row) {
+            $normalized = self::normalizeProductRow($row->toArray());
+            $map[(int) $normalized['id']] = $normalized;
+        }
+
+        return $map;
+    }
+
+    /**
      * Loads products by IDs with row-level lock for order placement inside a transaction.
      *
      * @param list<int> $productIds

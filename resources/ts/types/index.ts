@@ -175,6 +175,51 @@ export interface CustomerOrdersSummary {
   in_progress_count: number;
 }
 
+export interface ReorderPreviewItem {
+  product_id: number;
+  sku: string;
+  description: string;
+  unit_name: string;
+  allow_decimal: boolean;
+  step_size: number;
+  image_path: string | null;
+  unit_price: number;
+  previous_unit_price: number;
+  price_changed: boolean;
+  price_delta: number;
+  stock_quantity: number;
+  ordered_quantity: number;
+  suggested_quantity: number;
+  reason?: string;
+}
+
+export interface ReorderUnavailableItem {
+  product_id: number;
+  description: string;
+  unit_name: string;
+  ordered_quantity: number;
+  previous_unit_price: number;
+  reason: string;
+}
+
+export interface ReorderPreviewSummary {
+  total_items: number;
+  available_count: number;
+  adjusted_count: number;
+  unavailable_count: number;
+  price_changed_count: number;
+  can_reorder: boolean;
+}
+
+export interface ReorderPreviewPayload {
+  order_id: number;
+  order_number: string;
+  available: ReorderPreviewItem[];
+  adjusted: ReorderPreviewItem[];
+  unavailable: ReorderUnavailableItem[];
+  summary: ReorderPreviewSummary;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
