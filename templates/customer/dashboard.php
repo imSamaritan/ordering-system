@@ -232,13 +232,23 @@ $base = $basePath ?? '';
                             <span class="text-sm font-bold text-stone-900 dark:text-stone-100 font-mono" x-text="formatPrice(order.total_amount)"></span>
                         </div>
 
-                        <button
-                            type="button"
-                            @click="openOrderDetail(order.id)"
-                            class="w-full rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 py-2 text-xs font-semibold transition-colors cursor-pointer"
-                        >
-                            View Invoice
-                        </button>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button
+                                type="button"
+                                @click="openOrderDetail(order.id)"
+                                class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-800 text-stone-800 dark:text-stone-200 py-2 text-xs font-semibold transition-colors cursor-pointer"
+                            >
+                                View Invoice
+                            </button>
+                            <button
+                                type="button"
+                                @click="reorderOrder(order.id)"
+                                :disabled="reorderingOrderId !== null"
+                                class="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 py-2 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                                <span x-text="reorderingOrderId === order.id ? 'Checking...' : 'Reorder'"></span>
+                            </button>
+                        </div>
                     </div>
                 </template>
             </div>
@@ -294,13 +304,23 @@ $base = $basePath ?? '';
                                 <td class="px-4 py-3.5 text-right text-stone-600 dark:text-stone-400" x-text="order.item_count ?? 0"></td>
                                 <td class="px-4 py-3.5 text-right font-semibold text-stone-900 dark:text-stone-100 whitespace-nowrap" x-text="formatPrice(order.total_amount)"></td>
                                 <td class="px-4 py-3.5 text-right whitespace-nowrap">
-                                    <button
-                                        type="button"
-                                        @click="openOrderDetail(order.id)"
-                                        class="text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 font-semibold text-xs cursor-pointer"
-                                    >
-                                        View Invoice
-                                    </button>
+                                    <div class="inline-flex items-center justify-end gap-3">
+                                        <button
+                                            type="button"
+                                            @click="reorderOrder(order.id)"
+                                            :disabled="reorderingOrderId !== null"
+                                            class="inline-flex items-center gap-1 rounded-md border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 px-2.5 py-1 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                        >
+                                            <span x-text="reorderingOrderId === order.id ? 'Checking...' : 'Reorder'"></span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            @click="openOrderDetail(order.id)"
+                                            class="text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 font-semibold text-xs cursor-pointer"
+                                        >
+                                            View Invoice
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         </template>
@@ -410,21 +430,101 @@ $base = $basePath ?? '';
             </div>
 
             <div class="px-4 sm:px-6 py-3.5 border-t border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950/60 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-2 shrink-0">
-                <a
-                    x-show="activeOrder"
-                    :href="activeOrder ? statementPdfUrl('single', activeOrder.id) : '#'"
-                    target="_blank"
-                    rel="noopener"
-                    class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white px-3.5 py-2.5 sm:py-2 text-xs font-semibold transition-colors"
-                >
-                    Download Invoice PDF
-                </a>
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <a
+                        x-show="activeOrder"
+                        :href="activeOrder ? statementPdfUrl('single', activeOrder.id) : '#'"
+                        target="_blank"
+                        rel="noopener"
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white px-3.5 py-2.5 sm:py-2 text-xs font-semibold transition-colors"
+                    >
+                        Download Invoice PDF
+                    </a>
+                    <button
+                        x-show="activeOrder"
+                        type="button"
+                        @click="activeOrder && reorderOrder(activeOrder.id)"
+                        :disabled="reorderingOrderId !== null"
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 px-3.5 py-2.5 sm:py-2 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                        <span x-text="activeOrder && reorderingOrderId === activeOrder.id ? 'Checking Stock...' : 'Reorder Items'"></span>
+                    </button>
+                </div>
                 <button
                     type="button"
                     @click="closeOrderDetail()"
                     class="w-full sm:w-auto sm:ml-auto rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 px-3.5 py-2.5 sm:py-2 text-xs font-semibold transition-colors cursor-pointer"
                 >
                     Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reorder Cart Choice Modal (shown when cart already has items) -->
+    <div
+        x-show="reorderChoiceModalOpen"
+        x-cloak
+        class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-900/60 dark:bg-black/75"
+        @keydown.escape.window="reorderChoiceModalOpen && cancelReorderChoice()"
+    >
+        <div
+            @click.away="cancelReorderChoice()"
+            class="bg-white dark:bg-stone-900 rounded-2xl shadow-xl border border-stone-200 dark:border-stone-800 max-w-md w-full overflow-hidden"
+        >
+            <div class="px-5 py-4 border-b border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950/60 flex items-center justify-between gap-2">
+                <h3 class="text-base font-bold text-stone-900 dark:text-stone-100">Your Cart Already Has Items</h3>
+                <button
+                    type="button"
+                    @click="cancelReorderChoice()"
+                    class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-800 text-lg leading-none cursor-pointer"
+                    aria-label="Close reorder choice modal"
+                >&times;</button>
+            </div>
+
+            <div class="p-5 space-y-3 text-sm text-stone-600 dark:text-stone-300" x-show="pendingReorderPreview">
+                <p>
+                    You currently have <strong class="text-stone-900 dark:text-stone-100" x-text="$store.cart.totalItems"></strong> item(s) in your cart.
+                    How would you like to add <strong class="text-stone-900 dark:text-stone-100" x-text="pendingReorderPreview ? (pendingReorderPreview.available.length + pendingReorderPreview.adjusted.length) : 0"></strong> available item(s) from
+                    <span class="font-mono font-semibold text-stone-900 dark:text-stone-100" x-text="pendingReorderPreview ? pendingReorderPreview.order_number : ''"></span>?
+                </p>
+
+                <template x-if="pendingReorderPreview && (pendingReorderPreview.summary.adjusted_count > 0 || pendingReorderPreview.summary.unavailable_count > 0 || pendingReorderPreview.summary.price_changed_count > 0)">
+                    <ul class="rounded-lg border border-amber-200 dark:border-amber-800/70 bg-amber-50 dark:bg-amber-950/40 px-3.5 py-2.5 text-xs text-amber-900 dark:text-amber-200 space-y-1">
+                        <li x-show="pendingReorderPreview.summary.adjusted_count > 0">
+                            &bull; <span x-text="pendingReorderPreview.summary.adjusted_count"></span> item(s) adjusted to match current stock.
+                        </li>
+                        <li x-show="pendingReorderPreview.summary.unavailable_count > 0">
+                            &bull; <span x-text="pendingReorderPreview.summary.unavailable_count"></span> item(s) unavailable and will be skipped.
+                        </li>
+                        <li x-show="pendingReorderPreview.summary.price_changed_count > 0">
+                            &bull; <span x-text="pendingReorderPreview.summary.price_changed_count"></span> item(s) reflect updated catalog pricing.
+                        </li>
+                    </ul>
+                </template>
+            </div>
+
+            <div class="px-5 py-3.5 border-t border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2">
+                <button
+                    type="button"
+                    @click="cancelReorderChoice()"
+                    class="rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="button"
+                    @click="confirmReorder('replace')"
+                    class="rounded-lg border border-red-200 dark:border-red-800/80 bg-red-50 dark:bg-red-950/50 hover:bg-red-100 dark:hover:bg-red-900/60 text-red-800 dark:text-red-300 px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer"
+                >
+                    Replace Cart
+                </button>
+                <button
+                    type="button"
+                    @click="confirmReorder('merge')"
+                    class="rounded-lg bg-emerald-700 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white px-4 py-2 text-xs font-semibold transition-colors cursor-pointer"
+                >
+                    Merge with Cart
                 </button>
             </div>
         </div>

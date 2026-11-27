@@ -302,7 +302,14 @@ final class OrderService
 
         $safeOrderNumber = htmlspecialchars($orderNumber, ENT_QUOTES, 'UTF-8');
         $safeCustomerName = htmlspecialchars($customerName, ENT_QUOTES, 'UTF-8');
+        $safeCustomerEmail = htmlspecialchars($customerEmail, ENT_QUOTES, 'UTF-8');
         $safeAppName = htmlspecialchars($this->appName, ENT_QUOTES, 'UTF-8');
+        $orderNotes = trim((string) ($order['notes'] ?? ''));
+        $notesHtml = '';
+        if ($orderNotes !== '') {
+            $safeOrderNotes = nl2br(htmlspecialchars($orderNotes, ENT_QUOTES, 'UTF-8'));
+            $notesHtml = "<p style=\"background:#f5f5f4;border-left:3px solid #065f46;padding:10px 12px;margin:14px 0;\"><strong>Order Notes:</strong><br>{$safeOrderNotes}</p>";
+        }
 
         $customerHtml = <<<HTML
 <div style="font-family:Segoe UI,Arial,sans-serif;max-width:600px;margin:0 auto;color:#1c1917;">
@@ -319,6 +326,7 @@ final class OrderService
     </thead>
     <tbody>{$rowsHtml}</tbody>
   </table>
+  {$notesHtml}
   <p style="font-size:16px;font-weight:700;text-align:right;">Total: {$totalFormatted}</p>
 </div>
 HTML;
@@ -340,7 +348,7 @@ HTML;
         $supplierHtml = <<<HTML
 <div style="font-family:Segoe UI,Arial,sans-serif;max-width:600px;margin:0 auto;color:#1c1917;">
   <h2 style="color:#065f46;">New Order Received — {$safeOrderNumber}</h2>
-  <p>A new order has been placed by <strong>{$safeBuyerLabel}</strong> ({$customerEmail}).</p>
+  <p>A new order has been placed by <strong>{$safeBuyerLabel}</strong> ({$safeCustomerEmail}).</p>
   <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;">
     <thead>
       <tr style="background:#f5f5f4;text-align:left;">
@@ -351,6 +359,7 @@ HTML;
     </thead>
     <tbody>{$rowsHtml}</tbody>
   </table>
+  {$notesHtml}
   <p style="font-size:16px;font-weight:700;text-align:right;">Order Total: {$totalFormatted}</p>
 </div>
 HTML;

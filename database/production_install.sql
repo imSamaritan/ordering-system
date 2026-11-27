@@ -198,9 +198,10 @@ INSERT IGNORE INTO `units` (`id`, `name`, `allow_decimal`, `step_size`) VALUES
   (2, 'Unit', 0, 1.00),
   (3, 'Punnet', 0, 1.00);
 
--- Seed default supplier account (change password after first login!)
+-- Seed supplier accounts (change default passwords after first login!)
 INSERT IGNORE INTO `users` (`role`, `company_name`, `contact_name`, `email`, `phone`, `location`, `password_hash`, `email_verified_at`, `is_active`, `created_at`, `updated_at`) VALUES
-  ('supplier', 'Fresh Produce Wholesale SA', 'Primary Supplier Admin', 'supplier@freshproduce.co.za', '+27 11 555 0100', 'Johannesburg Fresh Produce Market, City Deep', '$2y$12$DosR/qttb/v5OoqDcHvSvO.IFzyw5vekKy2aOwz01MCO9JLli7KUS', NOW(), 1, NOW(), NOW());
+  ('supplier', 'Fresh Produce Wholesale SA', 'Primary Supplier Admin', 'supplier@freshproduce.co.za', '+27 11 555 0100', 'Johannesburg Fresh Produce Market, City Deep', '$2y$12$DosR/qttb/v5OoqDcHvSvO.IFzyw5vekKy2aOwz01MCO9JLli7KUS', NOW(), 1, NOW(), NOW()),
+  ('supplier', 'Asamaritan Fresh Produce', 'Supplier Admin', 'no-reply@asamaritan-order-management-sys.co.za', NULL, 'South Africa', '$2y$12$upfHFfA5DemC.LLJfXcKOOEfKAYDmoGzZCbSIri2J6/DgkQu3evrW', NOW(), 1, NOW(), NOW());
 
 -- Seed 98 catalog products
 INSERT IGNORE INTO `products` (`category_id`, `unit_id`, `sku`, `slug`, `description`, `image_path`, `unit_price`, `stock_quantity`, `is_active`, `created_at`, `updated_at`) VALUES
