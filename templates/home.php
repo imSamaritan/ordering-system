@@ -1,17 +1,11 @@
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8" x-data="storefrontPage()">
     <!-- Hero & Search Bar -->
     <div class="rounded-2xl bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-950 dark:from-emerald-950 dark:via-emerald-900/90 dark:to-stone-950 dark:border dark:border-emerald-800/50 text-white p-5 sm:p-8 shadow-sm">
-        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5 sm:gap-6">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 sm:gap-6">
             <div>
                 <span class="inline-flex items-center rounded-full bg-emerald-700/70 dark:bg-emerald-800/70 px-3 py-1 text-xs font-semibold text-emerald-100">
                     Fresh Wholesale &amp; Retail Produce
                 </span>
-                <h1 class="mt-3 text-xl sm:text-3xl font-bold tracking-tight">
-                    Fresh Produce Storefront
-                </h1>
-                <p class="mt-1.5 text-sm text-emerald-100/90 max-w-2xl">
-                    Order fruit, vegetables, herbs, mushrooms, and eggs with precision <strong class="text-white">0.1 kg</strong> decimal increments or whole <strong class="text-white">Unit / Punnet</strong> quantities.
-                </p>
             </div>
 
             <div class="w-full lg:w-96">
