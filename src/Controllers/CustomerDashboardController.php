@@ -97,9 +97,19 @@ final class CustomerDashboardController
         $receivedCount = 0;
         $inProgressCount = 0;
 
+        $includeExcludedInTotal = in_array(
+            $statusParam,
+            ['declined', 'cancelled', 'complete_and_declined', 'delivered_and_declined'],
+            true
+        );
+
         foreach ($orders as $order) {
             $amountCents = (int) round(((float) $order['total_amount']) * 100);
-            $totalSpendCents += $amountCents;
+            $isExcludedStatus = in_array($order['status'], ['declined', 'cancelled'], true);
+
+            if ($includeExcludedInTotal || !$isExcludedStatus) {
+                $totalSpendCents += $amountCents;
+            }
 
             switch ($order['status']) {
                 case 'delivered':

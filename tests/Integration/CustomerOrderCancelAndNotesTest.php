@@ -329,6 +329,21 @@ final class CustomerOrderCancelAndNotesTest extends TestCase
         $this->assertSame($pendingOrderAId, $customerListBody['data']['orders'][0]['id']);
         $this->assertSame(1, $customerListBody['data']['summary']['cancelled_count']);
         $this->assertGreaterThan(0, $customerListBody['data']['summary']['cancelled_total']);
+        $this->assertEqualsWithDelta(
+            (float) $customerListBody['data']['summary']['cancelled_total'],
+            (float) $customerListBody['data']['summary']['total_spend'],
+            0.001
+        );
+
+        // Default all-status summary excludes cancelled order from total_spend (only receivedOrderAId = 25.00 counts)
+        $customerAllRes = $this->app->handle(
+            $reqFactory->createServerRequest('GET', '/api/v1/customer/orders')
+                ->withCookieParams([$cookieName => $tokenA])
+        );
+        $this->assertSame(200, $customerAllRes->getStatusCode());
+        $customerAllBody = json_decode((string) $customerAllRes->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertCount(2, $customerAllBody['data']['orders']);
+        $this->assertEqualsWithDelta(25.00, (float) $customerAllBody['data']['summary']['total_spend'], 0.001);
 
         $supplierListRes = $this->app->handle(
             $reqFactory->createServerRequest('GET', "/api/v1/supplier/companies/{$this->customerAId}/orders")

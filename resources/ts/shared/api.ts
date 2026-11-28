@@ -1,4 +1,7 @@
 import type { ApiResponse } from '../types/index.js';
+import { formatCurrencyAmount } from './format.js';
+
+export { formatCurrencyAmount };
 
 export function getBasePath(): string {
   const meta = document.querySelector<HTMLMetaElement>('meta[name="app-base-path"]');
@@ -11,7 +14,7 @@ export function getCurrencySymbol(): string {
 }
 
 export function formatCurrency(amount: number): string {
-  return `${getCurrencySymbol()}${amount.toFixed(2)}`;
+  return formatCurrencyAmount(amount, getCurrencySymbol());
 }
 
 export async function apiRequest<T>(

@@ -190,13 +190,25 @@ final class CustomerDashboardAndPdfTest extends TestCase
         $allBody = json_decode((string) $allRes->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertTrue($allBody['success']);
         $this->assertCount(3, $allBody['data']['orders']);
-        $this->assertSame(265.75, (float) $allBody['data']['summary']['total_spend']);
+        // Default all-status total_spend excludes declined (60.00) -> 125.50 + 80.25 = 205.75
+        $this->assertSame(205.75, (float) $allBody['data']['summary']['total_spend']);
         $this->assertSame(1, $allBody['data']['summary']['delivered_count']);
         $this->assertSame(125.5, (float) $allBody['data']['summary']['delivered_spend']);
         $this->assertSame(1, $allBody['data']['summary']['declined_count']);
         $this->assertSame(60.0, (float) $allBody['data']['summary']['declined_total']);
 
-        // 5. Date-range filter (Jan + Feb only -> excludes March pending order)
+        // Filtering explicitly by status=declined includes declined total in total_spend
+        $declinedOnlyRes = $this->app->handle(
+            $reqFactory->createServerRequest('GET', '/api/v1/customer/orders')
+                ->withQueryParams(['status' => 'declined'])
+                ->withCookieParams([$cookieName => $tokenA])
+        );
+        $this->assertSame(200, $declinedOnlyRes->getStatusCode());
+        $declinedOnlyBody = json_decode((string) $declinedOnlyRes->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertCount(1, $declinedOnlyBody['data']['orders']);
+        $this->assertSame(60.0, (float) $declinedOnlyBody['data']['summary']['total_spend']);
+
+        // 5. Date-range filter (Jan + Feb only -> excludes March pending order; declined excluded from total_spend)
         $rangeRes = $this->app->handle(
             $reqFactory->createServerRequest('GET', '/api/v1/customer/orders')
                 ->withQueryParams(['date_from' => '2026-01-01', 'date_to' => '2026-02-28'])
@@ -205,7 +217,7 @@ final class CustomerDashboardAndPdfTest extends TestCase
         $this->assertSame(200, $rangeRes->getStatusCode());
         $rangeBody = json_decode((string) $rangeRes->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertCount(2, $rangeBody['data']['orders']);
-        $this->assertSame(185.5, (float) $rangeBody['data']['summary']['total_spend']);
+        $this->assertSame(125.5, (float) $rangeBody['data']['summary']['total_spend']);
 
         // 6. Order number partial filter
         $numRes = $this->app->handle(

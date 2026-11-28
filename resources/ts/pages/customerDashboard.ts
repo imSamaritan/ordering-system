@@ -157,8 +157,17 @@ export function customerDashboardPage(): CustomerDashboardComponent {
 
         this.orders = res.data.orders;
         this.summary = res.data.summary;
-        // Default to selecting all matching invoices so Total Spend reflects the current view immediately
-        this.selectedOrderIds = this.orders.map((o) => o.id);
+        // Default to selecting active/completed invoices; exclude declined and cancelled
+        // unless the user explicitly filtered for them (or manually selects their checkboxes).
+        const includeExcludedByDefault =
+          this.statusFilter === 'declined' ||
+          this.statusFilter === 'cancelled' ||
+          this.statusFilter === 'complete_and_declined';
+        this.selectedOrderIds = includeExcludedByDefault
+          ? this.orders.map((o) => o.id)
+          : this.orders
+              .filter((o) => o.status !== 'declined' && o.status !== 'cancelled')
+              .map((o) => o.id);
       } catch {
         this.loadError = 'Network error while loading your order history.';
         this.orders = [];
