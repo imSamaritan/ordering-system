@@ -18,6 +18,7 @@ export interface CartStore {
   increment(product: Product): boolean;
   incrementById(productId: number, maxStock?: number): boolean;
   addBulkItems(items: CartItem[], mode: 'merge' | 'replace'): void;
+  syncProductMetadata(products: Product[]): void;
   decrement(productId: number): void;
   remove(productId: number): void;
   clear(): void;
@@ -89,9 +90,15 @@ export function createCartStore(): CartStore {
         existing.unitPrice = product.unit_price;
         existing.maxStock = product.stock_quantity;
         existing.imagePath = product.image_path;
+        existing.categoryId = product.category_id;
+        existing.categorySlug = product.category_slug;
+        existing.categoryName = product.category_name;
       } else {
         this.items.push({
           productId: product.id,
+          categoryId: product.category_id,
+          categorySlug: product.category_slug,
+          categoryName: product.category_name,
           sku: product.sku,
           description: product.description,
           unitName: product.unit_name ?? 'Unit',
@@ -161,6 +168,15 @@ export function createCartStore(): CartStore {
             existing.stepSize = incoming.stepSize;
             existing.unitPrice = incoming.unitPrice;
             existing.imagePath = incoming.imagePath;
+            if (incoming.categoryId !== undefined) {
+              existing.categoryId = incoming.categoryId;
+            }
+            if (incoming.categorySlug !== undefined) {
+              existing.categorySlug = incoming.categorySlug;
+            }
+            if (incoming.categoryName !== undefined) {
+              existing.categoryName = incoming.categoryName;
+            }
             if (incoming.maxStock !== undefined) {
               existing.maxStock = incoming.maxStock;
             }
@@ -180,6 +196,41 @@ export function createCartStore(): CartStore {
       }
 
       this.persist();
+    },
+
+    syncProductMetadata(products: Product[]): void {
+      if (this.items.length === 0 || products.length === 0) {
+        return;
+      }
+
+      const productById = new Map<number, Product>();
+      for (const product of products) {
+        productById.set(product.id, product);
+      }
+
+      let changed = false;
+      for (const item of this.items) {
+        const product = productById.get(item.productId);
+        if (!product) {
+          continue;
+        }
+        if (item.categoryId !== product.category_id) {
+          item.categoryId = product.category_id;
+          changed = true;
+        }
+        if (product.category_slug && item.categorySlug !== product.category_slug) {
+          item.categorySlug = product.category_slug;
+          changed = true;
+        }
+        if (product.category_name && item.categoryName !== product.category_name) {
+          item.categoryName = product.category_name;
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        this.persist();
+      }
     },
 
     decrement(productId: number): void {
