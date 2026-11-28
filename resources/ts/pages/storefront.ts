@@ -72,6 +72,8 @@ export function storefrontPage(): StorefrontComponent {
         }
         if (prodRes.success && prodRes.data) {
           this.products = prodRes.data.products;
+          const cart = window.Alpine.store('cart') as CartStore;
+          cart.syncProductMetadata(this.products);
         } else {
           this.loadError = prodRes.message ?? 'Unable to load catalog.';
         }

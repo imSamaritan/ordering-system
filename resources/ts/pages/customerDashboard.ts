@@ -447,6 +447,9 @@ export function customerDashboardPage(): CustomerDashboardComponent {
 
       const toCartItem = (item: ReorderPreviewItem): CartItem => ({
         productId: item.product_id,
+        categoryId: item.category_id,
+        categorySlug: item.category_slug,
+        categoryName: item.category_name,
         sku: item.sku,
         description: item.description,
         unitName: item.unit_name || 'Unit',

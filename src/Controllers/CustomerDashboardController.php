@@ -292,6 +292,9 @@ final class CustomerDashboardController
 
             $entry = [
                 'product_id' => $productId,
+                'category_id' => (int) ($product['category_id'] ?? 0),
+                'category_slug' => (string) ($product['category_slug'] ?? ''),
+                'category_name' => (string) ($product['category_name'] ?? ''),
                 'sku' => (string) $product['sku'],
                 'description' => (string) $product['description'],
                 'unit_name' => (string) $product['unit_name'],

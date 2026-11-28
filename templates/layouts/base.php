@@ -357,7 +357,39 @@ $versionedAsset = static function (string $relativePath) use ($assetBase, $publi
                 </button>
             </div>
 
-            <!-- Cart Items List -->
+            <!-- Cart Section Controls (Collapse All / Expand All) -->
+            <div
+                x-show="$store.cart.items.length > 0"
+                data-cart-section-controls="true"
+                class="px-4 sm:px-5 py-2 border-b border-stone-200 dark:border-stone-800 bg-stone-50/90 dark:bg-stone-900/90 flex items-center justify-between gap-2 shrink-0"
+            >
+                <span
+                    class="text-[11px] font-medium text-stone-500 dark:text-stone-400"
+                    x-text="groupedItems.length + (groupedItems.length === 1 ? ' category' : ' categories')"
+                ></span>
+                <div class="inline-flex items-center gap-1.5">
+                    <button
+                        type="button"
+                        @click="expandAllCategories()"
+                        :disabled="allSectionsExpanded"
+                        data-cart-expand-all="true"
+                        class="rounded-md border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 hover:border-emerald-500 hover:text-emerald-800 dark:hover:border-emerald-500 dark:hover:text-emerald-300 disabled:opacity-45 disabled:cursor-not-allowed px-2.5 py-1 text-[11px] font-semibold text-stone-700 dark:text-stone-200 transition-colors cursor-pointer"
+                    >
+                        Expand All
+                    </button>
+                    <button
+                        type="button"
+                        @click="collapseAllCategories()"
+                        :disabled="allSectionsCollapsed"
+                        data-cart-collapse-all="true"
+                        class="rounded-md border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 hover:border-emerald-500 hover:text-emerald-800 dark:hover:border-emerald-500 dark:hover:text-emerald-300 disabled:opacity-45 disabled:cursor-not-allowed px-2.5 py-1 text-[11px] font-semibold text-stone-700 dark:text-stone-200 transition-colors cursor-pointer"
+                    >
+                        Collapse All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cart Items List (Grouped by Category) -->
             <div class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3">
                 <template x-if="$store.cart.items.length === 0">
                     <div class="text-center py-12 space-y-3">
@@ -374,70 +406,117 @@ $versionedAsset = static function (string $relativePath) use ($assetBase, $publi
                     </div>
                 </template>
 
-                <template x-for="item in $store.cart.items" :key="item.productId">
-                    <div class="rounded-xl border border-stone-200 dark:border-stone-800 p-3.5 bg-stone-50/70 dark:bg-stone-800/60">
-                        <div class="flex items-start justify-between gap-2">
-                            <div class="flex items-center gap-3 min-w-0">
-                                <div
-                                    data-cart-item-thumb="true"
-                                    class="w-12 h-12 rounded-lg bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 overflow-hidden shrink-0 flex items-center justify-center"
+                <template x-for="group in groupedItems" :key="group.slug">
+                    <section
+                        data-cart-category-section="true"
+                        :data-category-slug="group.slug"
+                        class="rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900/70 overflow-hidden"
+                    >
+                        <button
+                            type="button"
+                            @click="toggleCategory(group.slug)"
+                            :aria-expanded="(!isCategoryCollapsed(group.slug)).toString()"
+                            :aria-controls="'cart-section-' + group.slug"
+                            data-cart-category-header="true"
+                            class="w-full px-3.5 py-2.5 flex items-center justify-between gap-2 bg-emerald-50/80 hover:bg-emerald-100/70 dark:bg-emerald-950/50 dark:hover:bg-emerald-950/80 text-left transition-colors cursor-pointer"
+                        >
+                            <div class="flex items-center gap-2 min-w-0">
+                                <svg
+                                    data-cart-category-chevron="true"
+                                    class="w-4 h-4 shrink-0 text-emerald-700 dark:text-emerald-400 transition-transform duration-200"
+                                    :class="isCategoryCollapsed(group.slug) ? '-rotate-90' : 'rotate-0'"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2.25"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
                                 >
-                                    <template x-if="productImageUrl(item.imagePath) && !brokenImages[item.productId]">
-                                        <img
-                                            :src="productImageUrl(item.imagePath)"
-                                            :alt="item.description"
-                                            loading="lazy"
-                                            @error="markImageBroken(item.productId)"
-                                            class="w-full h-full object-cover"
-                                        >
-                                    </template>
-                                    <template x-if="!productImageUrl(item.imagePath) || brokenImages[item.productId]">
-                                        <span class="text-[10px] font-semibold text-stone-400 dark:text-stone-500">IMG</span>
-                                    </template>
-                                </div>
-                                <div class="min-w-0">
-                                    <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100 break-words" x-text="item.description"></h3>
-                                    <p class="text-xs text-stone-500 dark:text-stone-400">
-                                        <span x-text="formatPrice(item.unitPrice)"></span> / <span x-text="item.unitName"></span>
-                                    </p>
-                                </div>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                </svg>
+                                <span class="text-xs font-bold uppercase tracking-wide text-emerald-950 dark:text-emerald-100 truncate" x-text="group.name"></span>
+                                <span
+                                    class="inline-flex items-center justify-center rounded-full bg-emerald-200/80 dark:bg-emerald-900/90 px-2 py-0.5 text-[11px] font-semibold text-emerald-900 dark:text-emerald-200 shrink-0"
+                                    x-text="group.itemCount"
+                                ></span>
                             </div>
-                            <button
-                                type="button"
-                                @click="$store.cart.remove(item.productId)"
-                                class="shrink-0 text-xs text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-400 px-2 py-1 rounded cursor-pointer"
-                                title="Remove item"
-                            >
-                                Remove
-                            </button>
-                        </div>
+                            <span
+                                class="text-xs font-bold font-mono text-emerald-900 dark:text-emerald-300 shrink-0"
+                                x-text="formatPrice(group.subtotal)"
+                            ></span>
+                        </button>
 
-                        <div class="mt-3 flex items-center justify-between gap-2">
-                            <div class="inline-flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    @click="$store.cart.decrement(item.productId)"
-                                    class="w-9 h-9 sm:w-7 sm:h-7 rounded-md bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-800 dark:text-stone-200 font-bold text-sm sm:text-xs cursor-pointer"
-                                    aria-label="Decrease cart item quantity"
-                                >
-                                    &minus;
-                                </button>
-                                <span class="text-xs font-mono font-semibold text-stone-900 dark:text-stone-100 min-w-16 text-center">
-                                    <span x-text="$store.cart.formatQuantity(item.quantityTenths / 10, item.allowDecimal)"></span>
-                                    <span x-text="' ' + item.unitName"></span>
-                                </span>
-                                <button
-                                    type="button"
-                                    @click="incrementCartItem(item.productId)"
-                                    class="w-9 h-9 sm:w-7 sm:h-7 rounded-md bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold text-sm sm:text-xs cursor-pointer"
-                                    aria-label="Increase cart item quantity"
-                                >
-                                    +
-                                </button>
-                            </div>
-                            <span class="text-sm font-bold text-emerald-900 dark:text-emerald-400 font-mono" x-text="formatPrice($store.cart.lineTotal(item))"></span>
+                        <div
+                            :id="'cart-section-' + group.slug"
+                            x-show="!isCategoryCollapsed(group.slug)"
+                            class="p-2.5 space-y-2.5 border-t border-stone-200/80 dark:border-stone-800"
+                        >
+                            <template x-for="item in group.items" :key="item.productId">
+                                <div class="rounded-xl border border-stone-200 dark:border-stone-800 p-3.5 bg-stone-50/70 dark:bg-stone-800/60">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <div
+                                                data-cart-item-thumb="true"
+                                                class="w-12 h-12 rounded-lg bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 overflow-hidden shrink-0 flex items-center justify-center"
+                                            >
+                                                <template x-if="productImageUrl(item.imagePath) && !brokenImages[item.productId]">
+                                                    <img
+                                                        :src="productImageUrl(item.imagePath)"
+                                                        :alt="item.description"
+                                                        loading="lazy"
+                                                        @error="markImageBroken(item.productId)"
+                                                        class="w-full h-full object-cover"
+                                                    >
+                                                </template>
+                                                <template x-if="!productImageUrl(item.imagePath) || brokenImages[item.productId]">
+                                                    <span class="text-[10px] font-semibold text-stone-400 dark:text-stone-500">IMG</span>
+                                                </template>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <h3 class="text-sm font-semibold text-stone-900 dark:text-stone-100 break-words" x-text="item.description"></h3>
+                                                <p class="text-xs text-stone-500 dark:text-stone-400">
+                                                    <span x-text="formatPrice(item.unitPrice)"></span> / <span x-text="item.unitName"></span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            @click="$store.cart.remove(item.productId)"
+                                            class="shrink-0 text-xs text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-400 px-2 py-1 rounded cursor-pointer"
+                                            title="Remove item"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+
+                                    <div class="mt-3 flex items-center justify-between gap-2">
+                                        <div class="inline-flex items-center gap-2">
+                                            <button
+                                                type="button"
+                                                @click="$store.cart.decrement(item.productId)"
+                                                class="w-9 h-9 sm:w-7 sm:h-7 rounded-md bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-800 dark:text-stone-200 font-bold text-sm sm:text-xs cursor-pointer"
+                                                aria-label="Decrease cart item quantity"
+                                            >
+                                                &minus;
+                                            </button>
+                                            <span class="text-xs font-mono font-semibold text-stone-900 dark:text-stone-100 min-w-16 text-center">
+                                                <span x-text="$store.cart.formatQuantity(item.quantityTenths / 10, item.allowDecimal)"></span>
+                                                <span x-text="' ' + item.unitName"></span>
+                                            </span>
+                                            <button
+                                                type="button"
+                                                @click="incrementCartItem(item.productId)"
+                                                class="w-9 h-9 sm:w-7 sm:h-7 rounded-md bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold text-sm sm:text-xs cursor-pointer"
+                                                aria-label="Increase cart item quantity"
+                                            >
+                                                +
+                                            </button>
+                                        </div>
+                                        <span class="text-sm font-bold text-emerald-900 dark:text-emerald-400 font-mono" x-text="formatPrice($store.cart.lineTotal(item))"></span>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
-                    </div>
+                    </section>
                 </template>
             </div>
 
@@ -487,7 +566,7 @@ $versionedAsset = static function (string $relativePath) use ($assetBase, $publi
                 <button
                     type="button"
                     x-show="$store.cart.items.length > 0"
-                    @click="$store.cart.clear()"
+                    @click="clearCart()"
                     class="w-full text-xs text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 py-1.5 cursor-pointer"
                 >
                     Clear Cart

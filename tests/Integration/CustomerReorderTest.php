@@ -320,6 +320,9 @@ final class CustomerReorderTest extends TestCase
         // Verify available items details
         $avail0 = $data['available'][0];
         $this->assertSame($prodAvailableSamePrice, $avail0['product_id']);
+        $this->assertSame($categoryId, (int) $avail0['category_id']);
+        $this->assertNotSame('', (string) $avail0['category_slug']);
+        $this->assertNotSame('', (string) $avail0['category_name']);
         $this->assertSame(2.5, (float) $avail0['suggested_quantity']);
         $this->assertFalse($avail0['price_changed']);
         $this->assertSame(0.0, (float) $avail0['price_delta']);

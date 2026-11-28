@@ -70,6 +70,9 @@ export interface Product {
 
 export interface CartItem {
   productId: number;
+  categoryId?: number;
+  categorySlug?: string;
+  categoryName?: string;
   sku: string;
   description: string;
   unitName: string;
@@ -182,6 +185,9 @@ export interface CustomerOrdersSummary {
 
 export interface ReorderPreviewItem {
   product_id: number;
+  category_id?: number;
+  category_slug?: string;
+  category_name?: string;
   sku: string;
   description: string;
   unit_name: string;
