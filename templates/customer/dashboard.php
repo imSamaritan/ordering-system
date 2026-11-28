@@ -335,11 +335,14 @@ $base = $basePath ?? '';
     <div
         x-show="detailModalOpen"
         x-cloak
+        role="dialog"
+        aria-modal="true"
+        aria-label="Order Invoice Details"
         class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-stone-900/60 dark:bg-black/75"
-        @keydown.escape.window="closeOrderDetail()"
+        @keydown.escape.window="detailModalOpen && !cancelModalOpen && !reorderChoiceModalOpen && closeOrderDetail()"
     >
         <div
-            @click.away="closeOrderDetail()"
+            @click.away="!cancelModalOpen && !reorderChoiceModalOpen && closeOrderDetail()"
             class="bg-white dark:bg-stone-900 rounded-2xl shadow-xl border border-stone-200 dark:border-stone-800 max-w-2xl w-full max-h-[92dvh] sm:max-h-[90vh] flex flex-col overflow-hidden"
         >
             <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between gap-2 bg-stone-50 dark:bg-stone-950/60 shrink-0">
@@ -540,6 +543,9 @@ $base = $basePath ?? '';
     <div
         x-show="reorderChoiceModalOpen"
         x-cloak
+        role="dialog"
+        aria-modal="true"
+        aria-label="Your Cart Already Has Items"
         class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-900/60 dark:bg-black/75"
         @keydown.escape.window="reorderChoiceModalOpen && cancelReorderChoice()"
     >
@@ -609,6 +615,9 @@ $base = $basePath ?? '';
     <div
         x-show="cancelModalOpen"
         x-cloak
+        role="dialog"
+        aria-modal="true"
+        aria-label="Cancel Pending Order"
         class="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-stone-900/65 dark:bg-black/80"
         @keydown.escape.window="cancelModalOpen && closeCancelModal()"
     >
