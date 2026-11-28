@@ -103,6 +103,12 @@ return static function (App $app): void {
         $group->get('/customer/orders/{id:[0-9]+}/reorder', [CustomerDashboardController::class, 'reorderPreview'])
             ->add(new RoleMiddleware('customer', 'company'))
             ->add(JwtCookieAuthMiddleware::class);
+        $group->post('/customer/orders/{id:[0-9]+}/cancel', [CustomerDashboardController::class, 'cancelOrder'])
+            ->add(new RoleMiddleware('customer', 'company'))
+            ->add(JwtCookieAuthMiddleware::class);
+        $group->patch('/customer/orders/{id:[0-9]+}/notes', [CustomerDashboardController::class, 'updateOrderNotes'])
+            ->add(new RoleMiddleware('customer', 'company'))
+            ->add(JwtCookieAuthMiddleware::class);
         $group->get('/customer/reports/pdf', [ReportController::class, 'customerStatementPdf'])
             ->add(new RoleMiddleware('customer', 'company'))
             ->add(JwtCookieAuthMiddleware::class);

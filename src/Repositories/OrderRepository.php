@@ -57,6 +57,7 @@ final class OrderRepository
             'ordered_at' => $now,
             'received_at' => null,
             'delivered_at' => null,
+            'cancelled_at' => null,
             'created_at' => $now,
             'updated_at' => $now,
         ]);
@@ -458,14 +459,20 @@ final class OrderRepository
         ?string $note,
         ?string $receivedAt,
         ?string $deliveredAt,
-        string $now
+        string $now,
+        ?string $cancelledAt = null
     ): void {
-        $this->db->query('UPDATE orders SET', [
+        $updateFields = [
             'status' => $newStatus,
             'received_at' => $receivedAt,
             'delivered_at' => $deliveredAt,
             'updated_at' => $now,
-        ], 'WHERE id = %i', $orderId);
+        ];
+        if ($cancelledAt !== null) {
+            $updateFields['cancelled_at'] = $cancelledAt;
+        }
+
+        $this->db->query('UPDATE orders SET', $updateFields, 'WHERE id = %i', $orderId);
 
         $this->db->query('INSERT INTO order_status_history', [
             'order_id' => $orderId,
@@ -475,6 +482,14 @@ final class OrderRepository
             'note' => $note,
             'changed_at' => $now,
         ]);
+    }
+
+    public function updateOrderNotes(int $orderId, ?string $notes, string $now): void
+    {
+        $this->db->query('UPDATE orders SET', [
+            'notes' => $notes,
+            'updated_at' => $now,
+        ], 'WHERE id = %i', $orderId);
     }
 
     /**
@@ -510,6 +525,7 @@ final class OrderRepository
             'ordered_at' => $this->formatDateTime($row['ordered_at'] ?? null),
             'received_at' => $this->formatDateTime($row['received_at'] ?? null),
             'delivered_at' => $this->formatDateTime($row['delivered_at'] ?? null),
+            'cancelled_at' => $this->formatDateTime($row['cancelled_at'] ?? null),
         ];
     }
 

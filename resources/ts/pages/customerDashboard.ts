@@ -20,6 +20,11 @@ interface CustomerOrderDetailPayload {
   order: Order;
 }
 
+interface CustomerOrderMutationPayload {
+  message: string;
+  order: Order;
+}
+
 const EMPTY_SUMMARY: CustomerOrdersSummary = {
   count: 0,
   total_spend: 0,
@@ -27,6 +32,8 @@ const EMPTY_SUMMARY: CustomerOrdersSummary = {
   delivered_spend: 0,
   declined_count: 0,
   declined_total: 0,
+  cancelled_count: 0,
+  cancelled_total: 0,
   pending_count: 0,
   received_count: 0,
   in_progress_count: 0,
@@ -49,6 +56,12 @@ export interface CustomerDashboardComponent {
   reorderingOrderId: number | null;
   reorderChoiceModalOpen: boolean;
   pendingReorderPreview: ReorderPreviewPayload | null;
+  editingNotes: boolean;
+  notesDraft: string;
+  savingNotes: boolean;
+  cancelModalOpen: boolean;
+  cancelReason: string;
+  cancellingOrder: boolean;
   init(): Promise<void>;
   loadOrders(): Promise<void>;
   applyFilters(): Promise<void>;
@@ -62,6 +75,12 @@ export interface CustomerDashboardComponent {
   get activePipelineCount(): number;
   openOrderDetail(orderId: number): Promise<void>;
   closeOrderDetail(): void;
+  startEditingNotes(): void;
+  cancelEditingNotes(): void;
+  saveOrderNotes(): Promise<void>;
+  openCancelModal(): void;
+  closeCancelModal(): void;
+  confirmCancelOrder(): Promise<void>;
   reorderOrder(orderId: number): Promise<void>;
   confirmReorder(mode: 'merge' | 'replace'): void;
   cancelReorderChoice(): void;
@@ -91,6 +110,12 @@ export function customerDashboardPage(): CustomerDashboardComponent {
     reorderingOrderId: null,
     reorderChoiceModalOpen: false,
     pendingReorderPreview: null,
+    editingNotes: false,
+    notesDraft: '',
+    savingNotes: false,
+    cancelModalOpen: false,
+    cancelReason: '',
+    cancellingOrder: false,
 
     async init(): Promise<void> {
       window.addEventListener('order:placed', () => {
@@ -216,6 +241,10 @@ export function customerDashboardPage(): CustomerDashboardComponent {
       this.detailLoading = true;
       this.detailError = '';
       this.activeOrder = null;
+      this.editingNotes = false;
+      this.notesDraft = '';
+      this.cancelModalOpen = false;
+      this.cancelReason = '';
 
       try {
         const res = await apiRequest<CustomerOrderDetailPayload>(`/customer/orders/${orderId}`);
@@ -235,6 +264,117 @@ export function customerDashboardPage(): CustomerDashboardComponent {
       this.detailModalOpen = false;
       this.activeOrder = null;
       this.detailError = '';
+      this.editingNotes = false;
+      this.notesDraft = '';
+      this.cancelModalOpen = false;
+      this.cancelReason = '';
+    },
+
+    startEditingNotes(): void {
+      if (!this.activeOrder || this.activeOrder.status !== 'pending') {
+        return;
+      }
+      this.notesDraft = this.activeOrder.notes ?? '';
+      this.editingNotes = true;
+    },
+
+    cancelEditingNotes(): void {
+      this.editingNotes = false;
+      this.notesDraft = '';
+    },
+
+    async saveOrderNotes(): Promise<void> {
+      if (!this.activeOrder || this.savingNotes || this.activeOrder.status !== 'pending') {
+        return;
+      }
+
+      const toast = window.Alpine.store('toast') as ToastStore;
+      this.savingNotes = true;
+
+      try {
+        const res = await apiRequest<CustomerOrderMutationPayload>(
+          `/customer/orders/${this.activeOrder.id}/notes`,
+          {
+            method: 'PATCH',
+            body: JSON.stringify({
+              notes: this.notesDraft.trim(),
+            }),
+          }
+        );
+
+        if (!res.success || !res.data?.order) {
+          toast.push(res.message ?? 'Could not update delivery notes.', 'error');
+          return;
+        }
+
+        this.activeOrder = res.data.order;
+        this.editingNotes = false;
+        this.notesDraft = '';
+        toast.push(res.data.message || 'Delivery notes updated.', 'success');
+
+        const updatedOrder = res.data.order;
+        this.orders = this.orders.map((o) =>
+          o.id === updatedOrder.id ? { ...o, notes: updatedOrder.notes } : o
+        );
+      } catch {
+        toast.push('Network error while updating delivery notes.', 'error');
+      } finally {
+        this.savingNotes = false;
+      }
+    },
+
+    openCancelModal(): void {
+      if (!this.activeOrder || this.activeOrder.status !== 'pending') {
+        return;
+      }
+      this.cancelReason = '';
+      this.cancelModalOpen = true;
+    },
+
+    closeCancelModal(): void {
+      if (this.cancellingOrder) {
+        return;
+      }
+      this.cancelModalOpen = false;
+      this.cancelReason = '';
+    },
+
+    async confirmCancelOrder(): Promise<void> {
+      if (!this.activeOrder || this.cancellingOrder || this.activeOrder.status !== 'pending') {
+        return;
+      }
+
+      const toast = window.Alpine.store('toast') as ToastStore;
+      this.cancellingOrder = true;
+
+      try {
+        const res = await apiRequest<CustomerOrderMutationPayload>(
+          `/customer/orders/${this.activeOrder.id}/cancel`,
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              reason: this.cancelReason.trim(),
+            }),
+          }
+        );
+
+        if (!res.success || !res.data?.order) {
+          toast.push(res.message ?? 'Could not cancel this order.', 'error');
+          return;
+        }
+
+        this.activeOrder = res.data.order;
+        this.cancelModalOpen = false;
+        this.cancelReason = '';
+        this.editingNotes = false;
+        this.notesDraft = '';
+        toast.push(res.data.message || 'Order cancelled.', 'success');
+        await this.loadOrders();
+      } catch {
+        toast.push('Network error while cancelling order.', 'error');
+      } finally {
+        this.cancellingOrder = false;
+      }
     },
 
     async reorderOrder(orderId: number): Promise<void> {
@@ -393,6 +533,8 @@ export function customerDashboardPage(): CustomerDashboardComponent {
           return 'Delivered';
         case 'declined':
           return 'Declined';
+        case 'cancelled':
+          return 'Cancelled';
         case 'in_progress':
           return 'In Progress';
         case 'received':
@@ -408,6 +550,8 @@ export function customerDashboardPage(): CustomerDashboardComponent {
           return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-800/80';
         case 'declined':
           return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-950/70 dark:text-red-300 dark:border-red-800/80';
+        case 'cancelled':
+          return 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700';
         case 'in_progress':
           return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/70 dark:text-blue-300 dark:border-blue-800/80';
         case 'received':

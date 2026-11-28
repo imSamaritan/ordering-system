@@ -64,7 +64,7 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
             <div class="rounded-xl border border-emerald-200 dark:border-emerald-800/70 bg-emerald-50/80 dark:bg-emerald-950/40 p-4 sm:p-5 shadow-xs">
                 <div class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">Active Revenue</div>
                 <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl font-bold text-emerald-950 dark:text-emerald-100 truncate" x-text="formatPrice(companiesSummary.total_revenue)"></div>
-                <div class="mt-1 text-[11px] sm:text-xs text-emerald-700 dark:text-emerald-400">Excluding declined</div>
+                <div class="mt-1 text-[11px] sm:text-xs text-emerald-700 dark:text-emerald-400">Excluding declined &amp; cancelled</div>
             </div>
         </div>
 
@@ -206,6 +206,7 @@ $tab = ($initialTab ?? 'companies') === 'inventory' ? 'inventory' : 'companies';
                         <option value="in_progress">In Progress</option>
                         <option value="delivered">Delivered</option>
                         <option value="declined">Declined</option>
+                        <option value="cancelled">Cancelled</option>
                     </select>
 
                     <form @submit.prevent="loadCompanyOrders()" class="flex items-center gap-2 w-full sm:flex-1">

@@ -109,6 +109,7 @@ final class PdfReportService
                 $badgeClass = match ($status) {
                     'delivered' => 'badge-delivered',
                     'declined' => 'badge-declined',
+                    'cancelled' => 'badge-cancelled',
                     'in_progress' => 'badge-progress',
                     'received' => 'badge-received',
                     default => 'badge-pending',
@@ -116,6 +117,7 @@ final class PdfReportService
                 $statusLabel = match ($status) {
                     'delivered' => 'Delivered (Complete)',
                     'declined' => 'Declined',
+                    'cancelled' => 'Cancelled',
                     'in_progress' => 'In Progress',
                     'received' => 'Received',
                     default => 'Pending',
@@ -204,6 +206,7 @@ final class PdfReportService
     .badge { display: inline-block; padding: 2px 7px; font-size: 8px; font-weight: bold; border-radius: 3px; text-transform: uppercase; }
     .badge-delivered { background: #d1fae5; color: #065f46; }
     .badge-declined { background: #fee2e2; color: #991b1b; }
+    .badge-cancelled { background: #f1f5f9; color: #475569; }
     .badge-progress { background: #dbeafe; color: #1e40af; }
     .badge-received { background: #fef3c7; color: #92400e; }
     .badge-pending { background: #e7e5e4; color: #44403c; }

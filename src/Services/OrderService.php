@@ -20,6 +20,7 @@ final class OrderService
         'in_progress' => ['delivered', 'declined'],
         'delivered' => [],
         'declined' => [],
+        'cancelled' => [],
     ];
 
     public function __construct(
@@ -508,6 +509,183 @@ HTML;
         ];
     }
 
+    /**
+     * Cancels a customer's own pending order, atomically restores reserved inventory,
+     * logs an audit row in order_status_history, and notifies both supplier and customer.
+     *
+     * @param array<string, mixed> $authUser
+     * @return array{
+     *   ok: bool,
+     *   status: int,
+     *   message: string,
+     *   errors?: array<string, string>,
+     *   order?: array<string, mixed>,
+     *   emails?: array{customer_sent: bool, supplier_sent: bool}
+     * }
+     */
+    public function cancelOrderByCustomer(int $orderId, array $authUser, ?string $reason = null): array
+    {
+        $trimmedReason = $reason !== null ? trim($reason) : '';
+        if (mb_strlen($trimmedReason) > 1000) {
+            return [
+                'ok' => false,
+                'status' => 422,
+                'message' => 'Cancellation reason must not exceed 1000 characters.',
+                'errors' => ['reason' => 'Cancellation reason must not exceed 1000 characters.'],
+            ];
+        }
+
+        $userId = (int) $authUser['id'];
+        $now = date('Y-m-d H:i:s');
+
+        $this->db->begin();
+        try {
+            $lockedOrder = $this->orderRepository->findByIdForUpdate($orderId);
+            if ($lockedOrder === null || (int) $lockedOrder['user_id'] !== $userId) {
+                $this->db->rollback();
+                return [
+                    'ok' => false,
+                    'status' => 404,
+                    'message' => 'Order not found.',
+                ];
+            }
+
+            $oldStatus = (string) $lockedOrder['status'];
+            if ($oldStatus !== 'pending') {
+                $this->db->rollback();
+                return [
+                    'ok' => false,
+                    'status' => 422,
+                    'message' => sprintf(
+                        'Only pending orders can be cancelled. This order is currently %s.',
+                        self::formatStatusLabel($oldStatus)
+                    ),
+                    'errors' => ['status' => 'Only pending orders can be cancelled.'],
+                ];
+            }
+
+            $historyNote = $trimmedReason !== '' ? $trimmedReason : 'Cancelled by customer.';
+
+            $this->orderRepository->updateStatusAndLogHistory(
+                $orderId,
+                $oldStatus,
+                'cancelled',
+                $userId,
+                $historyNote,
+                $lockedOrder['received_at'],
+                $lockedOrder['delivered_at'],
+                $now,
+                $now
+            );
+
+            $items = $this->orderRepository->findItemsByOrderId($orderId);
+            foreach ($items as $item) {
+                $this->productRepository->incrementStock(
+                    (int) $item['product_id'],
+                    (float) $item['quantity']
+                );
+            }
+
+            $this->db->commit();
+        } catch (Throwable $e) {
+            $this->db->rollback();
+            throw $e;
+        }
+
+        $updatedOrder = $this->orderRepository->findCustomerOrderDetail($userId, $orderId);
+        if ($updatedOrder === null) {
+            throw new RuntimeException('Failed to reload cancelled order.');
+        }
+
+        $emails = $this->sendOrderCancelledEmails($authUser, $updatedOrder, $trimmedReason);
+
+        return [
+            'ok' => true,
+            'status' => 200,
+            'message' => sprintf('Order %s has been cancelled.', (string) $updatedOrder['order_number']),
+            'order' => $updatedOrder,
+            'emails' => $emails,
+        ];
+    }
+
+    /**
+     * Updates delivery notes on a customer's own order while its status is still pending.
+     *
+     * @param array<string, mixed> $authUser
+     * @return array{
+     *   ok: bool,
+     *   status: int,
+     *   message: string,
+     *   errors?: array<string, string>,
+     *   order?: array<string, mixed>
+     * }
+     */
+    public function updatePendingOrderNotes(int $orderId, array $authUser, ?string $notes): array
+    {
+        $trimmedNotes = $notes !== null ? trim($notes) : '';
+        if (mb_strlen($trimmedNotes) > 1000) {
+            return [
+                'ok' => false,
+                'status' => 422,
+                'message' => 'Delivery notes must not exceed 1000 characters.',
+                'errors' => ['notes' => 'Notes must not exceed 1000 characters.'],
+            ];
+        }
+
+        $userId = (int) $authUser['id'];
+        $now = date('Y-m-d H:i:s');
+
+        $this->db->begin();
+        try {
+            $lockedOrder = $this->orderRepository->findByIdForUpdate($orderId);
+            if ($lockedOrder === null || (int) $lockedOrder['user_id'] !== $userId) {
+                $this->db->rollback();
+                return [
+                    'ok' => false,
+                    'status' => 404,
+                    'message' => 'Order not found.',
+                ];
+            }
+
+            $currentStatus = (string) $lockedOrder['status'];
+            if ($currentStatus !== 'pending') {
+                $this->db->rollback();
+                return [
+                    'ok' => false,
+                    'status' => 422,
+                    'message' => sprintf(
+                        'Delivery notes can only be edited while an order is pending. Current status: %s.',
+                        self::formatStatusLabel($currentStatus)
+                    ),
+                    'errors' => ['status' => 'Delivery notes can only be edited on pending orders.'],
+                ];
+            }
+
+            $this->orderRepository->updateOrderNotes(
+                $orderId,
+                $trimmedNotes !== '' ? $trimmedNotes : null,
+                $now
+            );
+
+            $this->db->commit();
+        } catch (Throwable $e) {
+            $this->db->rollback();
+            throw $e;
+        }
+
+        $updatedOrder = $this->orderRepository->findCustomerOrderDetail($userId, $orderId);
+        if ($updatedOrder === null) {
+            throw new RuntimeException('Failed to reload updated order.');
+        }
+
+        return [
+            'ok' => true,
+            'status' => 200,
+            'message' => 'Delivery notes updated.',
+            'order' => $updatedOrder,
+        ];
+    }
+
     public static function formatStatusLabel(string $status): string
     {
         return match ($status) {
@@ -515,8 +693,91 @@ HTML;
             'in_progress' => 'In Progress',
             'delivered' => 'Delivered',
             'declined' => 'Declined',
+            'cancelled' => 'Cancelled',
             default => 'Pending',
         };
+    }
+
+    /**
+     * @param array<string, mixed> $authUser
+     * @param array<string, mixed> $order
+     * @return array{customer_sent: bool, supplier_sent: bool}
+     */
+    private function sendOrderCancelledEmails(array $authUser, array $order, string $reason): array
+    {
+        $orderNumber = (string) $order['order_number'];
+        $totalFormatted = $this->currencySymbol . number_format((float) $order['total_amount'], 2);
+        $customerName = (string) ($authUser['contact_name'] ?? 'Customer');
+        $companyName = (string) ($authUser['company_name'] ?? '');
+        $customerEmail = (string) ($authUser['email'] ?? '');
+        $userId = (int) $authUser['id'];
+        $orderId = (int) $order['id'];
+
+        $safeOrderNumber = htmlspecialchars($orderNumber, ENT_QUOTES, 'UTF-8');
+        $safeCustomerName = htmlspecialchars($customerName, ENT_QUOTES, 'UTF-8');
+        $safeCustomerEmail = htmlspecialchars($customerEmail, ENT_QUOTES, 'UTF-8');
+        $safeAppName = htmlspecialchars($this->appName, ENT_QUOTES, 'UTF-8');
+
+        $reasonHtml = '';
+        if ($reason !== '') {
+            $safeReason = nl2br(htmlspecialchars($reason, ENT_QUOTES, 'UTF-8'));
+            $reasonHtml = "<p style=\"background:#f5f5f4;border-left:3px solid #64748b;padding:10px 12px;margin:14px 0;\"><strong>Cancellation Reason:</strong><br>{$safeReason}</p>";
+        }
+
+        $customerHtml = <<<HTML
+<div style="font-family:Segoe UI,Arial,sans-serif;max-width:600px;margin:0 auto;color:#1c1917;">
+  <h2 style="color:#475569;">Order Cancelled — {$safeOrderNumber}</h2>
+  <p>Hi {$safeCustomerName},</p>
+  <p>This confirms that your pending order <strong>{$safeOrderNumber}</strong> with <strong>{$safeAppName}</strong> has been cancelled as requested.</p>
+  {$reasonHtml}
+  <p style="font-size:14px;color:#57534e;">Cancelled Order Total: <strong>{$totalFormatted}</strong></p>
+</div>
+HTML;
+
+        $customerPlain = "Hi {$customerName}, your order {$orderNumber} ({$totalFormatted}) has been cancelled."
+            . ($reason !== '' ? " Reason: {$reason}" : '');
+
+        $customerRes = $this->emailService->send(
+            $userId,
+            $customerEmail,
+            $customerName,
+            'order_cancelled',
+            "Order Cancelled: {$orderNumber}",
+            $customerHtml,
+            $customerPlain,
+            $orderId
+        );
+
+        $buyerLabel = $companyName !== '' ? "{$companyName} ({$customerName})" : $customerName;
+        $safeBuyerLabel = htmlspecialchars($buyerLabel, ENT_QUOTES, 'UTF-8');
+
+        $supplierHtml = <<<HTML
+<div style="font-family:Segoe UI,Arial,sans-serif;max-width:600px;margin:0 auto;color:#1c1917;">
+  <h2 style="color:#475569;">Order Cancelled by Buyer — {$safeOrderNumber}</h2>
+  <p>Pending order <strong>{$safeOrderNumber}</strong> placed by <strong>{$safeBuyerLabel}</strong> ({$safeCustomerEmail}) was cancelled by the buyer. Reserved inventory has been restored automatically.</p>
+  {$reasonHtml}
+  <p style="font-size:14px;color:#57534e;">Order Total: <strong>{$totalFormatted}</strong></p>
+</div>
+HTML;
+
+        $supplierPlain = "Order {$orderNumber} from {$buyerLabel} ({$totalFormatted}) was cancelled by the buyer. Reserved stock has been restored."
+            . ($reason !== '' ? " Reason: {$reason}" : '');
+
+        $supplierRes = $this->emailService->send(
+            $userId,
+            $this->supplierEmail,
+            'Supplier Team',
+            'supplier_order_cancelled',
+            "Order Cancelled by Buyer: {$orderNumber}",
+            $supplierHtml,
+            $supplierPlain,
+            $orderId
+        );
+
+        return [
+            'customer_sent' => $customerRes['sent'],
+            'supplier_sent' => $supplierRes['sent'],
+        ];
     }
 
     /**

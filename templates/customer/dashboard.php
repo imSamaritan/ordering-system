@@ -134,6 +134,7 @@ $base = $basePath ?? '';
                     <option value="in_progress">In Progress</option>
                     <option value="delivered">Delivered (Complete)</option>
                     <option value="declined">Declined</option>
+                    <option value="cancelled">Cancelled</option>
                 </select>
             </div>
 
@@ -366,15 +367,81 @@ $base = $basePath ?? '';
                 <template x-if="!detailLoading && activeOrder">
                     <div class="space-y-5">
                         <div class="flex flex-wrap items-center justify-between gap-3">
-                            <span
-                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border"
-                                :class="statusBadgeClass(activeOrder.status)"
-                                x-text="statusLabel(activeOrder.status)"
-                            ></span>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border"
+                                    :class="statusBadgeClass(activeOrder.status)"
+                                    x-text="statusLabel(activeOrder.status)"
+                                ></span>
+                                <span
+                                    x-show="activeOrder.cancelled_at"
+                                    class="text-xs text-stone-500 dark:text-stone-400"
+                                    x-text="activeOrder.cancelled_at ? 'Cancelled: ' + activeOrder.cancelled_at : ''"
+                                ></span>
+                            </div>
                             <div class="text-lg font-bold text-emerald-900 dark:text-emerald-400" x-text="formatPrice(activeOrder.total_amount)"></div>
                         </div>
 
-                        <template x-if="activeOrder.notes">
+                        <!-- Delivery Notes (Editable while Pending, Read-only otherwise) -->
+                        <template x-if="activeOrder.status === 'pending'">
+                            <div class="rounded-lg bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-700 p-3.5 space-y-2.5">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-xs font-semibold text-stone-900 dark:text-stone-100">Delivery Notes</span>
+                                    <button
+                                        x-show="!editingNotes"
+                                        type="button"
+                                        @click="startEditingNotes()"
+                                        class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 cursor-pointer"
+                                    >
+                                        <span x-text="activeOrder.notes ? 'Edit Notes' : '+ Add Delivery Notes'"></span>
+                                    </button>
+                                </div>
+
+                                <template x-if="!editingNotes">
+                                    <p
+                                        class="text-xs leading-relaxed"
+                                        :class="activeOrder.notes ? 'text-stone-700 dark:text-stone-300' : 'text-stone-400 dark:text-stone-500 italic'"
+                                        x-text="activeOrder.notes || 'No delivery notes added yet. You can add gate or delivery instructions while this order is pending.'"
+                                    ></p>
+                                </template>
+
+                                <template x-if="editingNotes">
+                                    <form @submit.prevent="saveOrderNotes()" class="space-y-2.5">
+                                        <textarea
+                                            x-model="notesDraft"
+                                            rows="3"
+                                            maxlength="1000"
+                                            placeholder="Add delivery gate code, preferred drop-off instructions, or packing notes..."
+                                            class="w-full rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 py-2 text-xs text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none"
+                                        ></textarea>
+                                        <div class="flex flex-wrap items-center justify-between gap-2">
+                                            <span class="text-[11px] text-stone-400 dark:text-stone-500">
+                                                <span x-text="notesDraft.length"></span>/1000 characters
+                                            </span>
+                                            <div class="flex items-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    @click="cancelEditingNotes()"
+                                                    :disabled="savingNotes"
+                                                    class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    type="submit"
+                                                    :disabled="savingNotes"
+                                                    class="rounded-lg bg-emerald-700 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white px-3.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
+                                                >
+                                                    <span x-text="savingNotes ? 'Saving...' : 'Save Notes'"></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template x-if="activeOrder.status !== 'pending' && activeOrder.notes">
                             <div class="rounded-lg bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-700 px-3.5 py-2.5 text-xs text-stone-700 dark:text-stone-300">
                                 <span class="font-semibold text-stone-900 dark:text-stone-100">Order Notes:</span>
                                 <span x-text="activeOrder.notes"></span>
@@ -448,6 +515,14 @@ $base = $basePath ?? '';
                         class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 px-3.5 py-2.5 sm:py-2 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                         <span x-text="activeOrder && reorderingOrderId === activeOrder.id ? 'Checking Stock...' : 'Reorder Items'"></span>
+                    </button>
+                    <button
+                        x-show="activeOrder && activeOrder.status === 'pending'"
+                        type="button"
+                        @click="openCancelModal()"
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg border border-red-200 dark:border-red-800/80 bg-red-50 dark:bg-red-950/50 hover:bg-red-100 dark:hover:bg-red-900/60 text-red-700 dark:text-red-300 px-3.5 py-2.5 sm:py-2 text-xs font-semibold transition-colors cursor-pointer"
+                    >
+                        Cancel Order
                     </button>
                 </div>
                 <button
@@ -527,6 +602,70 @@ $base = $basePath ?? '';
                     Merge with Cart
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Cancel Pending Order Confirmation Modal -->
+    <div
+        x-show="cancelModalOpen"
+        x-cloak
+        class="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-stone-900/65 dark:bg-black/80"
+        @keydown.escape.window="cancelModalOpen && closeCancelModal()"
+    >
+        <div
+            @click.away="closeCancelModal()"
+            class="bg-white dark:bg-stone-900 rounded-2xl shadow-xl border border-stone-200 dark:border-stone-800 max-w-md w-full overflow-hidden"
+        >
+            <div class="px-5 py-4 border-b border-stone-200 dark:border-stone-800 bg-red-50/70 dark:bg-red-950/40 flex items-center justify-between gap-2">
+                <h3 class="text-base font-bold text-red-900 dark:text-red-200">Cancel Pending Order</h3>
+                <button
+                    type="button"
+                    @click="closeCancelModal()"
+                    :disabled="cancellingOrder"
+                    class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-800 text-lg leading-none cursor-pointer disabled:opacity-50"
+                    aria-label="Close cancel order modal"
+                >&times;</button>
+            </div>
+
+            <form @submit.prevent="confirmCancelOrder()" class="p-5 space-y-4">
+                <p class="text-sm text-stone-600 dark:text-stone-300">
+                    Are you sure you want to cancel order
+                    <span class="font-mono font-semibold text-stone-900 dark:text-stone-100" x-text="activeOrder ? activeOrder.order_number : ''"></span>?
+                    Reserved stock will be restored automatically and the supplier will be notified.
+                </p>
+
+                <div>
+                    <label for="cancel-order-reason" class="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1.5">
+                        Cancellation Reason <span class="font-normal text-stone-400 dark:text-stone-500">(optional)</span>
+                    </label>
+                    <textarea
+                        id="cancel-order-reason"
+                        x-model="cancelReason"
+                        rows="3"
+                        maxlength="1000"
+                        placeholder="e.g. Placed duplicate order or need to adjust delivery date..."
+                        class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 px-3 py-2 text-xs text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none"
+                    ></textarea>
+                </div>
+
+                <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-1">
+                    <button
+                        type="button"
+                        @click="closeCancelModal()"
+                        :disabled="cancellingOrder"
+                        class="rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                        Keep Order
+                    </button>
+                    <button
+                        type="submit"
+                        :disabled="cancellingOrder"
+                        class="rounded-lg bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-500 text-white px-4 py-2 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                        <span x-text="cancellingOrder ? 'Cancelling...' : 'Confirm Cancellation'"></span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

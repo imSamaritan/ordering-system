@@ -113,12 +113,13 @@ CREATE TABLE IF NOT EXISTS `orders` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `order_number` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
   `user_id` int unsigned NOT NULL,
-  `status` enum('pending','received','in_progress','delivered','declined') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `status` enum('pending','received','in_progress','delivered','declined','cancelled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
   `total_amount` decimal(12,2) NOT NULL DEFAULT 0.00,
   `notes` text COLLATE utf8mb4_unicode_ci,
   `ordered_at` datetime NOT NULL,
   `received_at` datetime DEFAULT NULL,
   `delivered_at` datetime DEFAULT NULL,
+  `cancelled_at` datetime DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -182,7 +183,8 @@ CREATE TABLE IF NOT EXISTS `email_logs` (
 -- Record migrations in phinxlog
 INSERT IGNORE INTO `phinxlog` (`version`, `migration_name`, `start_time`, `end_time`, `breakpoint`) VALUES
   (20261126000100, 'CreateInitialSchema', NOW(), NOW(), 0),
-  (20261126000200, 'CreatePasswordResetsTable', NOW(), NOW(), 0);
+  (20261126000200, 'CreatePasswordResetsTable', NOW(), NOW(), 0),
+  (20261128000300, 'AddCancelledOrderStatus', NOW(), NOW(), 0);
 
 -- Seed categories
 INSERT IGNORE INTO `categories` (`id`, `name`, `slug`, `sort_order`) VALUES

@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
+use App\Services\OrderService;
 use App\Support\ResponseHelper;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -19,11 +20,13 @@ final class CustomerDashboardController
         'in_progress',
         'delivered',
         'declined',
+        'cancelled',
     ];
 
     public function __construct(
         private readonly OrderRepository $orderRepository,
         private readonly ProductRepository $productRepository,
+        private readonly OrderService $orderService,
         private readonly PhpRenderer $view
     ) {
     }
@@ -86,8 +89,10 @@ final class CustomerDashboardController
         $totalSpendCents = 0;
         $deliveredSpendCents = 0;
         $declinedTotalCents = 0;
+        $cancelledTotalCents = 0;
         $deliveredCount = 0;
         $declinedCount = 0;
+        $cancelledCount = 0;
         $pendingCount = 0;
         $receivedCount = 0;
         $inProgressCount = 0;
@@ -104,6 +109,10 @@ final class CustomerDashboardController
                 case 'declined':
                     $declinedCount++;
                     $declinedTotalCents += $amountCents;
+                    break;
+                case 'cancelled':
+                    $cancelledCount++;
+                    $cancelledTotalCents += $amountCents;
                     break;
                 case 'received':
                     $receivedCount++;
@@ -126,6 +135,8 @@ final class CustomerDashboardController
                 'delivered_spend' => round($deliveredSpendCents / 100, 2),
                 'declined_count' => $declinedCount,
                 'declined_total' => round($declinedTotalCents / 100, 2),
+                'cancelled_count' => $cancelledCount,
+                'cancelled_total' => round($cancelledTotalCents / 100, 2),
                 'pending_count' => $pendingCount,
                 'received_count' => $receivedCount,
                 'in_progress_count' => $inProgressCount,
@@ -323,6 +334,102 @@ final class CustomerDashboardController
                 'can_reorder' => (count($available) + count($adjusted)) > 0,
             ],
         ]);
+    }
+
+    /**
+     * Cancels a customer's own pending order and restores reserved stock.
+     *
+     * @param array<string, string> $args
+     */
+    public function cancelOrder(Request $request, Response $response, array $args): Response
+    {
+        /** @var array<string, mixed>|null $authUser */
+        $authUser = $request->getAttribute('auth_user');
+        if ($authUser === null) {
+            return ResponseHelper::error($response, 'Authentication required.', 401);
+        }
+
+        $orderId = (int) ($args['id'] ?? 0);
+        if ($orderId <= 0) {
+            return ResponseHelper::error($response, 'Invalid order ID.', 400);
+        }
+
+        $body = $this->parseJsonBody($request);
+        $reason = isset($body['reason']) ? (string) $body['reason'] : null;
+
+        $result = $this->orderService->cancelOrderByCustomer($orderId, $authUser, $reason);
+        if (!$result['ok']) {
+            return ResponseHelper::error(
+                $response,
+                $result['message'],
+                $result['status'],
+                $result['errors'] ?? []
+            );
+        }
+
+        return ResponseHelper::json($response, [
+            'message' => $result['message'],
+            'order' => $result['order'],
+            'emails' => $result['emails'] ?? ['customer_sent' => false, 'supplier_sent' => false],
+        ], $result['status']);
+    }
+
+    /**
+     * Updates delivery notes for a customer's own pending order.
+     *
+     * @param array<string, string> $args
+     */
+    public function updateOrderNotes(Request $request, Response $response, array $args): Response
+    {
+        /** @var array<string, mixed>|null $authUser */
+        $authUser = $request->getAttribute('auth_user');
+        if ($authUser === null) {
+            return ResponseHelper::error($response, 'Authentication required.', 401);
+        }
+
+        $orderId = (int) ($args['id'] ?? 0);
+        if ($orderId <= 0) {
+            return ResponseHelper::error($response, 'Invalid order ID.', 400);
+        }
+
+        $body = $this->parseJsonBody($request);
+        $notes = array_key_exists('notes', $body) && $body['notes'] !== null
+            ? (string) $body['notes']
+            : null;
+
+        $result = $this->orderService->updatePendingOrderNotes($orderId, $authUser, $notes);
+        if (!$result['ok']) {
+            return ResponseHelper::error(
+                $response,
+                $result['message'],
+                $result['status'],
+                $result['errors'] ?? []
+            );
+        }
+
+        return ResponseHelper::json($response, [
+            'message' => $result['message'],
+            'order' => $result['order'],
+        ], $result['status']);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function parseJsonBody(Request $request): array
+    {
+        $parsed = $request->getParsedBody();
+        if (is_array($parsed)) {
+            return $parsed;
+        }
+
+        $raw = (string) $request->getBody();
+        if ($raw === '') {
+            return [];
+        }
+
+        $decoded = json_decode($raw, true);
+        return is_array($decoded) ? $decoded : [];
     }
 
     private function isValidDate(string $value): bool

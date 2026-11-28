@@ -21,6 +21,7 @@ final class SupplierDashboardController
         'in_progress',
         'delivered',
         'declined',
+        'cancelled',
     ];
 
     public function __construct(

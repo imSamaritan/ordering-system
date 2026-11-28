@@ -20,7 +20,8 @@ export type OrderStatus =
   | 'received'
   | 'in_progress'
   | 'delivered'
-  | 'declined';
+  | 'declined'
+  | 'cancelled';
 
 export interface User {
   id: number;
@@ -120,6 +121,7 @@ export interface Order {
   ordered_at: string;
   received_at: string | null;
   delivered_at: string | null;
+  cancelled_at?: string | null;
   item_count?: number;
   items?: OrderItem[];
   status_history?: OrderStatusHistoryEntry[];
@@ -143,6 +145,7 @@ export interface SupplierCompanyCard {
   in_progress_orders: number;
   delivered_orders: number;
   declined_orders: number;
+  cancelled_orders?: number;
   total_spend: number;
   last_ordered_at: string | null;
 }
@@ -170,6 +173,8 @@ export interface CustomerOrdersSummary {
   delivered_spend: number;
   declined_count: number;
   declined_total: number;
+  cancelled_count: number;
+  cancelled_total: number;
   pending_count: number;
   received_count: number;
   in_progress_count: number;

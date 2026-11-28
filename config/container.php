@@ -201,6 +201,7 @@ return [
     CustomerDashboardController::class => static fn (ContainerInterface $c): CustomerDashboardController => new CustomerDashboardController(
         $c->get(OrderRepository::class),
         $c->get(ProductRepository::class),
+        $c->get(OrderService::class),
         $c->get(PhpRenderer::class)
     ),
 

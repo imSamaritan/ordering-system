@@ -18,6 +18,7 @@ final class ReportController
         'in_progress',
         'delivered',
         'declined',
+        'cancelled',
     ];
 
     public function __construct(

@@ -118,7 +118,8 @@ final class UserRepository
                     COALESCE(SUM(CASE WHEN o.status = \'in_progress\' THEN 1 ELSE 0 END), 0) AS in_progress_orders,
                     COALESCE(SUM(CASE WHEN o.status = \'delivered\' THEN 1 ELSE 0 END), 0) AS delivered_orders,
                     COALESCE(SUM(CASE WHEN o.status = \'declined\' THEN 1 ELSE 0 END), 0) AS declined_orders,
-                    COALESCE(SUM(CASE WHEN o.status <> \'declined\' THEN o.total_amount ELSE 0 END), 0) AS total_spend,
+                    COALESCE(SUM(CASE WHEN o.status = \'cancelled\' THEN 1 ELSE 0 END), 0) AS cancelled_orders,
+                    COALESCE(SUM(CASE WHEN o.status NOT IN (\'declined\', \'cancelled\') THEN o.total_amount ELSE 0 END), 0) AS total_spend,
                     MAX(o.ordered_at) AS last_ordered_at
                 FROM users u
                 LEFT JOIN orders o ON o.user_id = u.id
@@ -160,7 +161,8 @@ final class UserRepository
                 COALESCE(SUM(CASE WHEN o.status = \'in_progress\' THEN 1 ELSE 0 END), 0) AS in_progress_orders,
                 COALESCE(SUM(CASE WHEN o.status = \'delivered\' THEN 1 ELSE 0 END), 0) AS delivered_orders,
                 COALESCE(SUM(CASE WHEN o.status = \'declined\' THEN 1 ELSE 0 END), 0) AS declined_orders,
-                COALESCE(SUM(CASE WHEN o.status <> \'declined\' THEN o.total_amount ELSE 0 END), 0) AS total_spend,
+                COALESCE(SUM(CASE WHEN o.status = \'cancelled\' THEN 1 ELSE 0 END), 0) AS cancelled_orders,
+                COALESCE(SUM(CASE WHEN o.status NOT IN (\'declined\', \'cancelled\') THEN o.total_amount ELSE 0 END), 0) AS total_spend,
                 MAX(o.ordered_at) AS last_ordered_at
              FROM users u
              LEFT JOIN orders o ON o.user_id = u.id
@@ -195,6 +197,7 @@ final class UserRepository
             'in_progress_orders' => (int) ($row['in_progress_orders'] ?? 0),
             'delivered_orders' => (int) ($row['delivered_orders'] ?? 0),
             'declined_orders' => (int) ($row['declined_orders'] ?? 0),
+            'cancelled_orders' => (int) ($row['cancelled_orders'] ?? 0),
             'total_spend' => round((float) ($row['total_spend'] ?? 0), 2),
             'last_ordered_at' => $lastOrdered !== null ? (string) $lastOrdered : null,
         ]);
